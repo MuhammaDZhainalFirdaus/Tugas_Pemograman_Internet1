@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Kategori - Toko Alat Kopi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: #e6ecf5; }
+        .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 220px; background: #263159; color: #fff; display: flex; flex-direction: column; z-index: 10; }
+        .sidebar .logo { font-size: 1.6rem; font-weight: bold; padding: 28px 0 18px 0; text-align: center; letter-spacing: 1px; background: #1b2242; }
+        .sidebar nav { flex: 1; display: flex; flex-direction: column; gap: 6px; margin-top: 18px; }
+        .sidebar nav a { color: #fff; text-decoration: none; padding: 12px 32px; display: flex; align-items: center; gap: 16px; font-size: 1.05rem; border-left: 4px solid transparent; transition: all 0.2s ease-in-out; }
+        .sidebar nav a.active { background: #435585; border-left: 4px solid #f7c873; }
+        .sidebar nav a:hover { background: #435585; border-left: 4px solid #f7c873; transform: translateX(8px); }
+        .sidebar .bottom { margin-bottom: 24px; text-align: center; }
+        .sidebar .bottom a { color: #fff; font-size: 1.1rem; text-decoration: none; padding: 8px 0; display: block; }
+        .main { margin-left: 220px; min-height: 100vh; background: #e6ecf5; }
+        .topbar { background: #435585; color: #fff; padding: 18px 32px; display: flex; align-items: center; justify-content: space-between; }
+        .topbar .search { background: #fff; border-radius: 24px; padding: 6px 18px; display: flex; align-items: center; width: 320px; }
+        .topbar .search input { border: none; outline: none; font-size: 1rem; background: transparent; margin-left: 8px; width: 100%; }
+        .topbar .user { display: flex; align-items: center; gap: 12px; }
+        .topbar .user .fa-user-circle { font-size: 1.7rem; }
+        .topbar .user .name { font-weight: 500; font-size: 1.08rem; }
+        
+        .content { padding: 32px; }
+        .breadcrumb { margin-bottom: 24px; color: #555; font-size: 0.95rem; }
+        .breadcrumb a { color: #435585; text-decoration: none; }
+        .card { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(38,49,89,0.07); }
+        .card-header { padding: 18px 24px; border-bottom: 1px solid #e0e0e0; display: flex; justify-content: space-between; align-items: center; }
+        .card-header h2 { margin: 0; font-size: 1.3rem; color: #263159; }
+        .btn-tambah { background: #27ae60; color: #fff; border: none; border-radius: 6px; padding: 8px 18px; font-size: 1rem; cursor: pointer; }
+        .card-body { padding: 24px; }
+        
+        .kategori-table { width: 100%; border-collapse: collapse; }
+        .kategori-table th, .kategori-table td { padding: 12px 15px; text-align: left; }
+        .kategori-table thead { background-color: #f8f9fa; }
+        .kategori-table th { font-weight: 600; color: #555; }
+        .kategori-table tbody tr:nth-child(even) { background-color: #f8f9fa; }
+        .kategori-table tbody tr:hover { background-color: #f1f1f1; }
+        .kategori-table td { color: #333; }
+        .action-btns a { color: #fff; padding: 6px 10px; border-radius: 4px; text-decoration: none; margin-right: 6px; font-size: 0.9rem; }
+        .btn-edit { background: #f1c40f; }
+        .btn-delete { background: #e74c3c; }
+
+        /* Form Styling */
+        #formKategori {
+            padding: 24px;
+            background: #fdfdfd;
+            border-bottom: 1px solid #e0e0e0;
+            display: none; /* Hidden by default */
+        }
+        #formKategori h3 {
+            margin-top: 0;
+            margin-bottom: 16px;
+            color: #263159;
+        }
+        #formKategori .form-group {
+            margin-bottom: 12px;
+        }
+        #formKategori label {
+            display: block;
+            margin-bottom: 4px;
+            color: #555;
+        }
+        #formKategori input[type="text"] {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1.2px solid #d1d5db;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        #formKategori .form-actions button {
+            border: none;
+            border-radius: 6px;
+            padding: 8px 18px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            margin-right: 8px;
+        }
+        #formKategori .btn-simpan {
+            background: #435585;
+            color: #fff;
+        }
+         #formKategori .btn-batal {
+            background: #eee;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo"><i class="fa fa-coffee"></i> Toko Kopi</div>
+        <nav>
+            <a href="dashboard.html"><i class="fa fa-tachometer-alt"></i> Dashboard</a>
+            <a href="kategori.html" class="active"><i class="fa fa-list-ul"></i> Kategori Produk</a>
+            <a href="produk.html"><i class="fa fa-shopping-bag"></i> Produk</a>
+            <a href="pesanan.html"><i class="fa fa-receipt"></i> Pesanan</a>
+            <a href="#kupon"><i class="fa fa-ticket-alt"></i> Kupon</a>
+            <a href="#pembayaran"><i class="fa fa-money-check-alt"></i> Pembayaran</a>
+            <a href="#pelanggan"><i class="fa fa-users"></i> Pelanggan</a>
+            <a href="#review"><i class="fa fa-edit"></i> Review Pelanggan</a>
+            <a href="#kontak"><i class="fa fa-phone"></i> Kontak</a>
+        </nav>
+        <div class="bottom">
+            <a href="login.html"><i class="fa fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </div>
+    <div class="main">
+        <div class="topbar">
+            <div class="search"><i class="fa fa-search" style="color:#888"></i><input type="text" placeholder="Cari..."></div>
+            <div class="user"><i class="fa fa-user-circle"></i><span class="name">Admin</span></div>
+        </div>
+        <div class="content">
+            <div class="breadcrumb">
+                <a href="produk.html">Produk</a> &gt; Kategori
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h2>Kategori Produk</h2>
+                    <button class="btn-tambah"><i class="fa fa-plus"></i> Tambah</button>
+                </div>
+                <div id="formKategori">
+                    <h3 id="formTitle">Tambah Kategori</h3>
+                    <form id="kategoriForm">
+                        <input type="hidden" id="kategoriId">
+                        <div class="form-group">
+                            <label for="namaKategori">Nama Kategori</label>
+                            <input type="text" id="namaKategori" required>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-simpan">Simpan</button>
+                            <button type="button" class="btn-batal">Batal</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-body">
+                    <table class="kategori-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>NAMA</th>
+                                <th>AKSI</th>
+                            </tr>
+                        </thead>
+                        <tbody id="kategoriTableBody">
+                            <!-- Data kategori akan dimuat di sini -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="data.js"></script>
+    <script>
+        // --- Data Persistence Logic for Categories ---
+        let categories;
+        const savedCategories = localStorage.getItem('categories');
+
+        if (savedCategories) {
+            categories = JSON.parse(savedCategories);
+        } else {
+            categories = initialCategories; 
+            localStorage.setItem('categories', JSON.stringify(categories));
+        }
+        // --- End of Data Persistence Logic ---
+
+        const tableBody = document.getElementById('kategoriTableBody');
+        const btnTambah = document.querySelector('.btn-tambah');
+        const formKategori = document.getElementById('formKategori');
+        const kategoriForm = document.getElementById('kategoriForm');
+        const formTitle = document.getElementById('formTitle');
+        const namaKategoriInput = document.getElementById('namaKategori');
+        const kategoriIdInput = document.getElementById('kategoriId');
+        const btnBatal = document.querySelector('.btn-batal');
+
+        function showForm(mode = 'add', id = null, name = '') {
+            formKategori.style.display = 'block';
+            kategoriIdInput.value = id;
+            namaKategoriInput.value = name;
+            formTitle.textContent = mode === 'add' ? 'Tambah Kategori' : 'Edit Kategori';
+            namaKategoriInput.focus();
+        }
+
+        function hideForm() {
+            formKategori.style.display = 'none';
+            kategoriForm.reset();
+        }
+
+        function loadCategories() {
+            const tableBody = document.getElementById('kategoriTableBody');
+            tableBody.innerHTML = '';
+            categories.forEach(cat => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${cat.id}</td>
+                    <td>${cat.name}</td>
+                    <td class="action-btns">
+                        <a href="#" class="btn-edit" data-id="${cat.id}" data-name="${cat.name}"><i class="fa fa-pencil-alt"></i></a>
+                        <a href="#" class="btn-delete" data-id="${cat.id}"><i class="fa fa-trash"></i></a>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', loadCategories);
+
+        btnTambah.addEventListener('click', () => showForm('add'));
+        btnBatal.addEventListener('click', hideForm);
+
+        kategoriForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = parseInt(kategoriIdInput.value);
+            const name = namaKategoriInput.value.trim();
+
+            if (!name) return alert('Nama kategori tidak boleh kosong.');
+
+            if (id) { // Edit Mode
+                const category = categories.find(c => c.id === id);
+                if (category) category.name = name;
+            } else { // Add Mode
+                const newId = categories.length > 0 ? Math.max(...categories.map(c => c.id)) + 1 : 1;
+                categories.push({ id: newId, name });
+            }
+
+            localStorage.setItem('categories', JSON.stringify(categories));
+            loadCategories();
+            hideForm();
+        });
+
+        tableBody.addEventListener('click', (e) => {
+            const link = e.target.closest('a');
+            if (!link) return;
+
+            e.preventDefault();
+            const id = parseInt(link.dataset.id);
+
+            if (link.classList.contains('btn-edit')) {
+                const name = link.dataset.name;
+                showForm('edit', id, name);
+            }
+
+            if (link.classList.contains('btn-delete')) {
+                if (confirm('Apakah Anda yakin ingin menghapus kategori ini?')) {
+                    categories = categories.filter(c => c.id !== id);
+                    localStorage.setItem('categories', JSON.stringify(categories));
+                    loadCategories();
+                }
+            }
+        });
+    </script>
+</body>
+</html> 

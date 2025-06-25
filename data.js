@@ -35,4 +35,12 @@ const initialProducts = [
         image: 'https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=400&q=80',
         description: 'Alat klasik untuk membuat kopi susu khas Vietnam dengan metode drip yang lambat dan menghasilkan rasa yang kuat.'
     }
+];
+
+const initialCategories = [
+    { id: 1, name: 'Manual Brew' },
+    { id: 2, name: 'Grinder' },
+    { id: 3, name: 'Aksesoris' },
+    { id: 4, name: 'Alat Seduh' },
+    { id: 5, name: 'Filter' }
 ]; 
