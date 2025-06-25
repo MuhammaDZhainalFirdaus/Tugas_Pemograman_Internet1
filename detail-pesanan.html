@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detail Pesanan - Toko Alat Kopi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: #e6ecf5; }
+        .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 220px; background: #263159; color: #fff; display: flex; flex-direction: column; z-index: 10; }
+        .sidebar .logo { font-size: 1.6rem; font-weight: bold; padding: 28px 0 18px 0; text-align: center; letter-spacing: 1px; background: #1b2242; }
+        .sidebar nav { flex: 1; display: flex; flex-direction: column; gap: 6px; margin-top: 18px; }
+        .sidebar nav a { color: #fff; text-decoration: none; padding: 12px 32px; display: flex; align-items: center; gap: 16px; font-size: 1.05rem; border-left: 4px solid transparent; transition: all 0.2s ease-in-out; }
+        .sidebar nav a.active {
+            background: #435585;
+            border-left: 4px solid #f7c873;
+        }
+        .sidebar nav a:hover {
+            background: #435585;
+            border-left: 4px solid #f7c873;
+            transform: translateX(8px);
+        }
+        .sidebar .bottom { margin-bottom: 24px; text-align: center; }
+        .sidebar .bottom a { color: #fff; font-size: 1.1rem; text-decoration: none; padding: 8px 0; display: block; }
+        .main { margin-left: 220px; min-height: 100vh; background: #e6ecf5; }
+        .topbar { background: #435585; color: #fff; padding: 18px 32px; display: flex; align-items: center; justify-content: space-between; }
+        .topbar .search { background: #fff; border-radius: 24px; padding: 6px 18px; display: flex; align-items: center; width: 320px; }
+        .topbar .search input { border: none; outline: none; font-size: 1rem; background: transparent; margin-left: 8px; width: 100%; }
+        .topbar .user { display: flex; align-items: center; gap: 12px; }
+        .topbar .user .fa-user-circle { font-size: 1.7rem; }
+        .topbar .user .name { font-weight: 500; font-size: 1.08rem; }
+        .detail-content { padding: 32px; }
+        .order-header { font-size: 1.5rem; font-weight: 600; margin-bottom: 24px; color: #263159; }
+        .detail-cards { display: flex; gap: 24px; flex-wrap: wrap; }
+        .detail-card { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(38,49,89,0.07); flex: 1; min-width: 300px; }
+        .detail-card .header { background: #f7f9fc; padding: 12px 18px; font-weight: 600; color: #263159; border-bottom: 1px solid #e6ecf5; border-radius: 12px 12px 0 0; }
+        .detail-card .body { padding: 18px; display: grid; grid-template-columns: 140px 1fr; gap: 10px; }
+        .detail-card .body .label { color: #555; }
+        .detail-card .body .value { font-weight: 500; color: #263159; }
+        .payment-section { margin-top: 24px; padding: 18px; background: #fff; border-radius: 12px; }
+        .payment-section .header { font-weight: 600; color: #263159; margin-bottom: 12px; }
+        .payment-section .value { font-size: 1.2rem; font-weight: bold; color: #27ae60; }
+        .actions { margin-top: 24px; }
+        .btn-ok { background: #435585; color: #fff; border: none; border-radius: 6px; padding: 8px 24px; font-size: 1rem; cursor: pointer; }
+        @media (max-width: 900px) { .main { margin-left: 0; } .sidebar { position: static; width: 100%; flex-direction: row; height: auto; } .detail-content { padding: 18px; } }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo"><i class="fa fa-coffee"></i> Toko Kopi</div>
+        <nav>
+            <a href="dashboard.html"><i class="fa fa-tachometer-alt"></i> Dashboard</a>
+            <a href="produk.html"><i class="fa fa-box"></i> Kelola Produk</a>
+            <a href="#pelayanan"><i class="fa fa-concierge-bell"></i> Pelayanan</a>
+            <a href="pesanan.html" class="active"><i class="fa fa-shopping-cart"></i> Pesanan</a>
+            <a href="#kupon"><i class="fa fa-ticket-alt"></i> Kupon</a>
+            <a href="#penjualan"><i class="fa fa-chart-line"></i> Penjualan</a>
+            <a href="#pelanggan"><i class="fa fa-users"></i> Pelanggan</a>
+            <a href="#review"><i class="fa fa-star"></i> Review</a>
+            <a href="#kontak"><i class="fa fa-envelope"></i> Kontak</a>
+        </nav>
+        <div class="bottom">
+            <a href="login.html"><i class="fa fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </div>
+    <div class="main">
+        <div class="topbar">
+            <div class="search"><i class="fa fa-search" style="color:#888"></i><input type="text" placeholder="Cari..."></div>
+            <div class="user"><i class="fa fa-user-circle"></i><span class="name">Admin</span></div>
+        </div>
+        <div class="detail-content">
+            <div class="order-header">Order #ASV261020111546</div>
+            <div class="detail-cards">
+                <div class="detail-card">
+                    <div class="header">Data Produk</div>
+                    <div class="body">
+                        <span class="label">Nomor</span><span class="value">#ASV261020111546</span>
+                        <span class="label">Tanggal</span><span class="value">20 November 2023</span>
+                        <span class="label">Item</span><span class="value">1</span>
+                        <span class="label">Harga</span><span class="value">Rp 60.000,00</span>
+                        <span class="label">Metode Pembayaran</span><span class="value">Transfer bank</span>
+                        <span class="label">Status</span><span class="value" style="color: #27ae60;">Selesai</span>
+                    </div>
+                </div>
+                <div class="detail-card">
+                    <div class="header">Data Penerima</div>
+                    <div class="body">
+                        <span class="label">Nama</span><span class="value">Penerima04</span>
+                        <span class="label">No. HP</span><span class="value">0878989899</span>
+                        <span class="label">Alamat</span><span class="value">Jl. Merdeka Barat, Jakarta</span>
+                        <span class="label">Catatan</span><span class="value">Tolong dikirim sesuai pesanan</span>
+                    </div>
+                </div>
+            </div>
+            <div class="payment-section">
+                <div class="header">Pembayaran</div>
+                <span class="value">Rp 60.000,00</span>
+            </div>
+            <div class="actions">
+                <a href="pesanan.html"><button class="btn-ok">OK</button></a>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 
