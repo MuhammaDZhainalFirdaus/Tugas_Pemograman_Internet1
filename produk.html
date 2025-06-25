@@ -214,9 +214,45 @@
         <div class="produk-content">
             <div class="produk-header">
                 <div class="produk-title">Kelola Produk</div>
-                <button class="btn-tambah"><i class="fa fa-plus"></i> Tambah</button>
+                <button class="btn-tambah" id="btnTambah"><i class="fa fa-plus"></i> Tambah</button>
             </div>
-            <div class="produk-grid">
+            <div id="formProduk" style="display:none; margin-bottom:32px;">
+                <div style="background:#435585;color:#fff;padding:14px 24px 10px 24px;border-radius:10px 10px 0 0;font-size:1.2rem;font-weight:600;">Tambah Produk</div>
+                <form id="produkBaruForm" style="background:#fff;padding:24px 24px 18px 24px;border-radius:0 0 10px 10px;box-shadow:0 2px 8px rgba(38,49,89,0.07);display:flex;gap:32px;flex-wrap:wrap;align-items:flex-start;">
+                    <div style="flex:2;min-width:220px;">
+                        <div style="margin-bottom:16px;">
+                            <label>Nama Produk</label><br>
+                            <input type="text" name="nama" required style="width:100%;padding:8px 10px;border-radius:6px;border:1.2px solid #d1d5db;font-size:1rem;">
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label>Harga</label><br>
+                            <input type="number" name="harga" required style="width:100%;padding:8px 10px;border-radius:6px;border:1.2px solid #d1d5db;font-size:1rem;">
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label>Kategori</label><br>
+                            <input type="text" name="kategori" required style="width:100%;padding:8px 10px;border-radius:6px;border:1.2px solid #d1d5db;font-size:1rem;">
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label>Stok</label><br>
+                            <input type="number" name="stok" required style="width:100%;padding:8px 10px;border-radius:6px;border:1.2px solid #d1d5db;font-size:1rem;">
+                        </div>
+                        <div style="margin-bottom:16px;">
+                            <label>Deskripsi</label><br>
+                            <textarea name="deskripsi" rows="3" style="width:100%;padding:8px 10px;border-radius:6px;border:1.2px solid #d1d5db;font-size:1rem;"></textarea>
+                        </div>
+                    </div>
+                    <div style="flex:1;min-width:180px;">
+                        <label>Foto</label><br>
+                        <input type="file" name="foto" accept="image/*" id="fotoInput" style="margin-bottom:10px;">
+                        <div id="previewFoto" style="margin-top:8px;"></div>
+                    </div>
+                    <div style="flex-basis:100%;margin-top:10px;">
+                        <button type="submit" style="background:#435585;color:#fff;padding:10px 24px;border:none;border-radius:6px;font-size:1rem;cursor:pointer;">Simpan Produk Baru</button>
+                        <button type="button" id="batalTambah" style="background:#eee;color:#435585;padding:10px 18px;border:none;border-radius:6px;font-size:1rem;cursor:pointer;margin-left:10px;">Batal</button>
+                    </div>
+                </form>
+            </div>
+            <div class="produk-grid" id="produkGrid">
                 <div class="produk-item">
                     <img src="https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&w=400&q=80" alt="Syphon Coffee Maker">
                     <div class="nama">Syphon Coffee Maker Manual Brew Vacuum Pot</div>
@@ -240,5 +276,54 @@
             </div>
         </div>
     </div>
+    <script>
+    // Tampilkan form tambah produk
+    const btnTambah = document.getElementById('btnTambah');
+    const formProduk = document.getElementById('formProduk');
+    const batalTambah = document.getElementById('batalTambah');
+    btnTambah.onclick = () => { formProduk.style.display = 'block'; btnTambah.style.display = 'none'; };
+    batalTambah.onclick = () => { formProduk.style.display = 'none'; btnTambah.style.display = 'inline-block'; };
+
+    // Preview foto
+    const fotoInput = document.getElementById('fotoInput');
+    const previewFoto = document.getElementById('previewFoto');
+    fotoInput.onchange = function() {
+        if (this.files && this.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewFoto.innerHTML = `<img src='${e.target.result}' style='width:90px;height:90px;object-fit:contain;border-radius:8px;'>`;
+            };
+            reader.readAsDataURL(this.files[0]);
+        } else {
+            previewFoto.innerHTML = '';
+        }
+    };
+
+    // Tambah produk ke grid
+    const produkBaruForm = document.getElementById('produkBaruForm');
+    const produkGrid = document.getElementById('produkGrid');
+    produkBaruForm.onsubmit = function(e) {
+        e.preventDefault();
+        const data = new FormData(produkBaruForm);
+        let imgSrc = '';
+        if (fotoInput.files && fotoInput.files[0]) {
+            imgSrc = previewFoto.querySelector('img') ? previewFoto.querySelector('img').src : '';
+        }
+        const nama = data.get('nama');
+        const harga = parseInt(data.get('harga')).toLocaleString('id-ID', {style:'currency',currency:'IDR',minimumFractionDigits:0}).replace(/,00$/, '');
+        const item = document.createElement('div');
+        item.className = 'produk-item';
+        item.innerHTML = `
+            <img src="${imgSrc || 'https://via.placeholder.com/90'}" alt="${nama}">
+            <div class="nama">${nama}</div>
+            <div class="harga">${harga}</div>
+        `;
+        produkGrid.appendChild(item);
+        produkBaruForm.reset();
+        previewFoto.innerHTML = '';
+        formProduk.style.display = 'none';
+        btnTambah.style.display = 'inline-block';
+    };
+    </script>
 </body>
 </html> 
