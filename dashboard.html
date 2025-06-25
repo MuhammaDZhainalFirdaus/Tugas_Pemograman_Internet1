@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Toko Mesin Kopi</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; background: #f5f5f5; }
+        header { background: #6f4e37; color: #fff; padding: 20px 0; text-align: center; }
+        nav { background: #a67c52; padding: 10px 0; text-align: center; }
+        nav a { color: #fff; margin: 0 15px; text-decoration: none; font-weight: bold; }
+        nav a:hover { text-decoration: underline; }
+        main { padding: 40px 20px; text-align: center; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Dashboard</h1>
+        <p>Selamat datang di Dashboard Toko Mesin Kopi</p>
+    </header>
+    <nav>
+        <a href="#">Beranda</a>
+        <a href="#produk">Produk</a>
+        <a href="#transaksi">Transaksi</a>
+        <a href="#logout" onclick="logout()">Logout</a>
+    </nav>
+    <main>
+        <h2>Halo, Selamat Datang!</h2>
+        <p>Silakan pilih menu di atas untuk mulai mengelola toko kopi Anda.</p>
+    </main>
+    <script>
+    function logout() {
+        window.location.href = 'login.html';
+    }
+    </script>
+</body>
+</html> 
