@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kelola Produk - Toko Alat Kopi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #e6ecf5;
+        }
+        .sidebar {
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            width: 220px;
+            background: #263159;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+        .sidebar .logo {
+            font-size: 1.6rem;
+            font-weight: bold;
+            padding: 28px 0 18px 0;
+            text-align: center;
+            letter-spacing: 1px;
+            background: #1b2242;
+        }
+        .sidebar nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 18px;
+        }
+        .sidebar nav a {
+            color: #fff;
+            text-decoration: none;
+            padding: 12px 32px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 1.05rem;
+            border-left: 4px solid transparent;
+            transition: background 0.2s, border 0.2s;
+        }
+        .sidebar nav a.active, .sidebar nav a:hover {
+            background: #435585;
+            border-left: 4px solid #f7c873;
+        }
+        .sidebar .bottom {
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        .sidebar .bottom a {
+            color: #fff;
+            font-size: 1.1rem;
+            text-decoration: none;
+            padding: 8px 0;
+            display: block;
+        }
+        .main {
+            margin-left: 220px;
+            min-height: 100vh;
+            background: #e6ecf5;
+        }
+        .topbar {
+            background: #435585;
+            color: #fff;
+            padding: 18px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .topbar .search {
+            background: #fff;
+            border-radius: 24px;
+            padding: 6px 18px;
+            display: flex;
+            align-items: center;
+            width: 320px;
+        }
+        .topbar .search input {
+            border: none;
+            outline: none;
+            font-size: 1rem;
+            background: transparent;
+            margin-left: 8px;
+            width: 100%;
+        }
+        .topbar .user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .topbar .user .fa-user-circle {
+            font-size: 1.7rem;
+        }
+        .topbar .user .name {
+            font-weight: 500;
+            font-size: 1.08rem;
+        }
+        .produk-content {
+            padding: 32px 32px 0 32px;
+        }
+        .produk-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: #263159;
+        }
+        .produk-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+        .produk-header .produk-title {
+            margin: 0;
+        }
+        .produk-header .btn-tambah {
+            background: #435585;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 18px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .produk-header .btn-tambah:hover {
+            background: #263159;
+        }
+        .produk-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 28px;
+        }
+        .produk-item {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(38,49,89,0.07);
+            padding: 18px 12px 14px 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        .produk-item img {
+            width: 90px;
+            height: 90px;
+            object-fit: contain;
+            margin-bottom: 12px;
+        }
+        .produk-item .nama {
+            font-size: 1.08rem;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: #263159;
+        }
+        .produk-item .harga {
+            font-size: 1rem;
+            color: #435585;
+            font-weight: 600;
+        }
+        @media (max-width: 900px) {
+            .main {
+                margin-left: 0;
+            }
+            .sidebar {
+                position: static;
+                width: 100%;
+                flex-direction: row;
+                height: auto;
+            }
+            .produk-content {
+                padding: 18px 6px 0 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo"><i class="fa fa-coffee"></i> Toko Kopi</div>
+        <nav>
+            <a href="dashboard.html"><i class="fa fa-tachometer-alt"></i> Dashboard</a>
+            <a href="produk.html" class="active"><i class="fa fa-box"></i> Kelola Produk</a>
+            <a href="#pelayanan"><i class="fa fa-concierge-bell"></i> Pelayanan</a>
+            <a href="#pesanan"><i class="fa fa-shopping-cart"></i> Pesanan</a>
+            <a href="#kupon"><i class="fa fa-ticket-alt"></i> Kupon</a>
+            <a href="#penjualan"><i class="fa fa-chart-line"></i> Penjualan</a>
+            <a href="#pelanggan"><i class="fa fa-users"></i> Pelanggan</a>
+            <a href="#review"><i class="fa fa-star"></i> Review</a>
+            <a href="#kontak"><i class="fa fa-envelope"></i> Kontak</a>
+        </nav>
+        <div class="bottom">
+            <a href="login.html"><i class="fa fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </div>
+    <div class="main">
+        <div class="topbar">
+            <div class="search">
+                <i class="fa fa-search" style="color:#888"></i>
+                <input type="text" placeholder="Cari...">
+            </div>
+            <div class="user">
+                <i class="fa fa-user-circle"></i>
+                <span class="name">Admin</span>
+            </div>
+        </div>
+        <div class="produk-content">
+            <div class="produk-header">
+                <div class="produk-title">Kelola Produk</div>
+                <button class="btn-tambah"><i class="fa fa-plus"></i> Tambah</button>
+            </div>
+            <div class="produk-grid">
+                <div class="produk-item">
+                    <img src="https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&w=400&q=80" alt="Syphon Coffee Maker">
+                    <div class="nama">Syphon Coffee Maker Manual Brew Vacuum Pot</div>
+                    <div class="harga">Rp 511.000</div>
+                </div>
+                <div class="produk-item">
+                    <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80" alt="Electric Coffee Grinder">
+                    <div class="nama">Electric Coffee Grinder - 650N</div>
+                    <div class="harga">Rp 1.111.000</div>
+                </div>
+                <div class="produk-item">
+                    <img src="https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80" alt="Coffee Server">
+                    <div class="nama">coffee server / coffee pot 01 teko server kopi v60</div>
+                    <div class="harga">Rp 181.000</div>
+                </div>
+                <div class="produk-item">
+                    <img src="https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=400&q=80" alt="Vietnam Drip">
+                    <div class="nama">Vietnam Drip Alat Pembuat Kopi Vietnam</div>
+                    <div class="harga">Rp 181.000</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 
