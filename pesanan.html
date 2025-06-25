@@ -149,20 +149,66 @@
         .pesanan-table td.status.batal {
             color: #e74c3c;
         }
-        .pesanan-table td.aksi button {
-            background: #435585;
+        .pesanan-table td.aksi a {
             color: #fff;
             border: none;
             border-radius: 6px;
-            padding: 6px 14px;
-            font-size: 0.98rem;
+            padding: 6px 12px;
+            font-size: 0.9rem;
             cursor: pointer;
             margin-right: 6px;
-            transition: background 0.2s;
+            text-decoration: none;
+            display: inline-block;
         }
-        .pesanan-table td.aksi button:hover {
-            background: #263159;
+        .btn-detail { background: #3498db; }
+        .btn-edit { background: #f1c40f; }
+        .btn-delete { background: #e74c3c; }
+
+        /* Form Edit */
+        #formEditPesanan {
+            background: #fff;
+            padding: 24px;
+            margin-bottom: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(38,49,89,0.07);
+            display: none;
         }
+        #formEditPesanan h3 { margin-top: 0; color: #263159; }
+        #formEditPesanan .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        #formEditPesanan .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #555;
+        }
+        #formEditPesanan .form-group input,
+        #formEditPesanan .form-group select {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1.2px solid #d1d5db;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        #formEditPesanan .form-actions {
+            grid-column: 1 / -1;
+            text-align: right;
+            margin-top: 16px;
+        }
+        #formEditPesanan .form-actions button {
+            border: none;
+            border-radius: 6px;
+            padding: 8px 18px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+        #formEditPesanan .btn-simpan { background: #27ae60; color: #fff; }
+        #formEditPesanan .btn-batal { background: #ecf0f1; color: #333; }
+
         @media (max-width: 900px) {
             .main {
                 margin-left: 0;
@@ -210,6 +256,34 @@
         </div>
         <div class="pesanan-content">
             <div class="pesanan-title">Daftar Pesanan Customer</div>
+
+            <form id="formEditPesanan">
+                <h3>Edit Pesanan</h3>
+                <input type="hidden" id="editOrderId">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="editCustomerName">Nama Customer</label>
+                        <input type="text" id="editCustomerName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editDate">Tanggal</label>
+                        <input type="date" id="editDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editStatus">Status</label>
+                        <select id="editStatus" required>
+                            <option value="Selesai">Selesai</option>
+                            <option value="Proses">Proses</option>
+                            <option value="Batal">Batal</option>
+                        </select>
+                    </div>
+                </div>
+                 <div class="form-actions">
+                    <button type="button" class="btn-batal">Batal</button>
+                    <button type="submit" class="btn-simpan">Simpan Perubahan</button>
+                </div>
+            </form>
+
             <table class="pesanan-table">
                 <thead>
                     <tr>
@@ -223,46 +297,116 @@
                         <th>Aksi</th>
                     </tr>
                 </thead>
-                <tbody>
-                    <tr>
-                        <td>1</td>
-                        <td>Andi</td>
-                        <td>Syphon Coffee Maker</td>
-                        <td>2</td>
-                        <td>Rp 1.022.000</td>
-                        <td class="status selesai">Selesai</td>
-                        <td>2024-05-01</td>
-                        <td class="aksi">
-                            <a href="detail-pesanan.html"><button>Detail</button></a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>2</td>
-                        <td>Budi</td>
-                        <td>Electric Coffee Grinder</td>
-                        <td>1</td>
-                        <td>Rp 1.111.000</td>
-                        <td class="status proses">Proses</td>
-                        <td>2024-05-02</td>
-                        <td class="aksi">
-                            <a href="detail-pesanan.html"><button>Detail</button></a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td>3</td>
-                        <td>Citra</td>
-                        <td>Vietnam Drip</td>
-                        <td>3</td>
-                        <td>Rp 543.000</td>
-                        <td class="status batal">Batal</td>
-                        <td>2024-05-03</td>
-                        <td class="aksi">
-                            <a href="detail-pesanan.html"><button>Detail</button></a>
-                        </td>
-                    </tr>
+                <tbody id="ordersTableBody">
+                    <!-- Data pesanan akan dimuat di sini -->
                 </tbody>
             </table>
         </div>
     </div>
+    <script src="data.js"></script>
+    <script>
+        // --- Data Persistence Logic for Orders ---
+        let orders;
+        const savedOrders = localStorage.getItem('orders');
+        if (savedOrders) {
+            orders = JSON.parse(savedOrders);
+        } else {
+            orders = initialOrders;
+            localStorage.setItem('orders', JSON.stringify(orders));
+        }
+        // --- End of Data Persistence Logic ---
+
+        const tableBody = document.getElementById('ordersTableBody');
+        const formEdit = document.getElementById('formEditPesanan');
+        const orderIdInput = document.getElementById('editOrderId');
+        const customerNameInput = document.getElementById('editCustomerName');
+        const dateInput = document.getElementById('editDate');
+        const statusInput = document.getElementById('editStatus');
+        
+        function getStatusClass(status) {
+            switch (status.toLowerCase()) {
+                case 'selesai': return 'selesai';
+                case 'proses': return 'proses';
+                case 'batal': return 'batal';
+                default: return '';
+            }
+        }
+
+        function loadOrders() {
+            tableBody.innerHTML = '';
+            orders.forEach(order => {
+                const row = document.createElement('tr');
+                const productsText = order.products.map(p => `${p.name} (x${p.quantity})`).join(', ');
+                row.innerHTML = `
+                    <td>${order.id}</td>
+                    <td>${order.customerName}</td>
+                    <td>${productsText}</td>
+                    <td>1</td>
+                    <td>Rp ${order.totalPrice.toLocaleString('id-ID')}</td>
+                    <td class="status ${getStatusClass(order.status)}">${order.status}</td>
+                    <td>${order.date}</td>
+                    <td class="aksi">
+                        <a href="detail-pesanan.html?id=${order.id}" class="btn-detail"><i class="fa fa-eye"></i></a>
+                        <a href="#" class="btn-edit" data-id="${order.id}"><i class="fa fa-pencil-alt"></i></a>
+                        <a href="#" class="btn-delete" data-id="${order.id}"><i class="fa fa-trash"></i></a>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        
+        function showEditForm(order) {
+            orderIdInput.value = order.id;
+            customerNameInput.value = order.customerName;
+            dateInput.value = order.date;
+            statusInput.value = order.status;
+            formEdit.style.display = 'block';
+        }
+
+        function hideEditForm() {
+            formEdit.style.display = 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', loadOrders);
+
+        tableBody.addEventListener('click', (e) => {
+            const link = e.target.closest('a');
+            if (!link) return;
+
+            const id = parseInt(link.dataset.id);
+            if (link.classList.contains('btn-edit')) {
+                e.preventDefault();
+                const order = orders.find(o => o.id === id);
+                if (order) showEditForm(order);
+            }
+
+            if (link.classList.contains('btn-delete')) {
+                e.preventDefault();
+                if (confirm(`Yakin ingin menghapus pesanan #${id}?`)) {
+                    orders = orders.filter(o => o.id !== id);
+                    localStorage.setItem('orders', JSON.stringify(orders));
+                    loadOrders();
+                }
+            }
+        });
+
+        formEdit.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const id = parseInt(orderIdInput.value);
+            const order = orders.find(o => o.id === id);
+            if (order) {
+                order.customerName = customerNameInput.value;
+                order.date = dateInput.value;
+                order.status = statusInput.value;
+                localStorage.setItem('orders', JSON.stringify(orders));
+                loadOrders();
+                hideEditForm();
+            } else {
+                alert('Pesanan tidak ditemukan!');
+            }
+        });
+        
+        formEdit.querySelector('.btn-batal').addEventListener('click', hideEditForm);
+    </script>
 </body>
 </html> 
