@@ -3,35 +3,322 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - Toko Mesin Kopi</title>
+    <title>Dashboard - Toko Alat Kopi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        body { font-family: Arial, sans-serif; margin: 0; background: #f5f5f5; }
-        header { background: #6f4e37; color: #fff; padding: 20px 0; text-align: center; }
-        nav { background: #a67c52; padding: 10px 0; text-align: center; }
-        nav a { color: #fff; margin: 0 15px; text-decoration: none; font-weight: bold; }
-        nav a:hover { text-decoration: underline; }
-        main { padding: 40px 20px; text-align: center; }
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #e6ecf5;
+        }
+        .sidebar {
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            width: 220px;
+            background: #263159;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+        .sidebar .logo {
+            font-size: 1.6rem;
+            font-weight: bold;
+            padding: 28px 0 18px 0;
+            text-align: center;
+            letter-spacing: 1px;
+            background: #1b2242;
+        }
+        .sidebar nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 18px;
+        }
+        .sidebar nav a {
+            color: #fff;
+            text-decoration: none;
+            padding: 12px 32px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 1.05rem;
+            border-left: 4px solid transparent;
+            transition: background 0.2s, border 0.2s;
+        }
+        .sidebar nav a.active, .sidebar nav a:hover {
+            background: #435585;
+            border-left: 4px solid #f7c873;
+        }
+        .sidebar .bottom {
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        .sidebar .bottom a {
+            color: #fff;
+            font-size: 1.1rem;
+            text-decoration: none;
+            padding: 8px 0;
+            display: block;
+        }
+        .main {
+            margin-left: 220px;
+            min-height: 100vh;
+            background: #e6ecf5;
+        }
+        .topbar {
+            background: #435585;
+            color: #fff;
+            padding: 18px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .topbar .search {
+            background: #fff;
+            border-radius: 24px;
+            padding: 6px 18px;
+            display: flex;
+            align-items: center;
+            width: 320px;
+        }
+        .topbar .search input {
+            border: none;
+            outline: none;
+            font-size: 1rem;
+            background: transparent;
+            margin-left: 8px;
+            width: 100%;
+        }
+        .topbar .user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .topbar .user .fa-user-circle {
+            font-size: 1.7rem;
+        }
+        .topbar .user .name {
+            font-weight: 500;
+            font-size: 1.08rem;
+        }
+        .dashboard-content {
+            padding: 32px 32px 0 32px;
+        }
+        .dashboard-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: #263159;
+        }
+        .summary-cards {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+        .summary-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(38,49,89,0.07);
+            padding: 24px 28px;
+            flex: 1 1 180px;
+            min-width: 180px;
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+        .summary-card .icon {
+            font-size: 2rem;
+            color: #435585;
+            background: #e6ecf5;
+            border-radius: 50%;
+            padding: 12px;
+        }
+        .summary-card .info {
+            display: flex;
+            flex-direction: column;
+        }
+        .summary-card .info .label {
+            font-size: 1.02rem;
+            color: #888;
+        }
+        .summary-card .info .value {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #263159;
+        }
+        .summary-card .info .currency {
+            font-size: 1.1rem;
+            color: #263159;
+            font-weight: 600;
+        }
+        .charts-row {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+        .chart-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(38,49,89,0.07);
+            padding: 18px 18px 8px 18px;
+            flex: 2 1 400px;
+            min-width: 320px;
+        }
+        .chart-card.small {
+            flex: 1 1 220px;
+            min-width: 220px;
+        }
+        .chart-title {
+            font-size: 1.08rem;
+            font-weight: 500;
+            margin-bottom: 12px;
+            color: #263159;
+        }
+        @media (max-width: 900px) {
+            .summary-cards, .charts-row {
+                flex-direction: column;
+                gap: 16px;
+            }
+            .main {
+                margin-left: 0;
+            }
+            .sidebar {
+                position: static;
+                width: 100%;
+                flex-direction: row;
+                height: auto;
+            }
+        }
     </style>
 </head>
 <body>
-    <header>
-        <h1>Dashboard</h1>
-        <p>Selamat datang di Dashboard Toko Mesin Kopi</p>
-    </header>
-    <nav>
-        <a href="#">Beranda</a>
-        <a href="#produk">Produk</a>
-        <a href="#transaksi">Transaksi</a>
-        <a href="#logout" onclick="logout()">Logout</a>
-    </nav>
-    <main>
-        <h2>Halo, Selamat Datang!</h2>
-        <p>Silakan pilih menu di atas untuk mulai mengelola toko kopi Anda.</p>
-    </main>
+    <div class="sidebar">
+        <div class="logo"><i class="fa fa-coffee"></i> Toko Kopi</div>
+        <nav>
+            <a href="#" class="active"><i class="fa fa-tachometer-alt"></i> Dashboard</a>
+            <a href="#produk"><i class="fa fa-box"></i> Kelola Produk</a>
+            <a href="#pelayanan"><i class="fa fa-concierge-bell"></i> Pelayanan</a>
+            <a href="#pesanan"><i class="fa fa-shopping-cart"></i> Pesanan</a>
+            <a href="#kupon"><i class="fa fa-ticket-alt"></i> Kupon</a>
+            <a href="#penjualan"><i class="fa fa-chart-line"></i> Penjualan</a>
+            <a href="#pelanggan"><i class="fa fa-users"></i> Pelanggan</a>
+            <a href="#review"><i class="fa fa-star"></i> Review</a>
+            <a href="#kontak"><i class="fa fa-envelope"></i> Kontak</a>
+        </nav>
+        <div class="bottom">
+            <a href="login.html"><i class="fa fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </div>
+    <div class="main">
+        <div class="topbar">
+            <div class="search">
+                <i class="fa fa-search" style="color:#888"></i>
+                <input type="text" placeholder="Cari...">
+            </div>
+            <div class="user">
+                <i class="fa fa-user-circle"></i>
+                <span class="name">Admin</span>
+            </div>
+        </div>
+        <div class="dashboard-content">
+            <div class="dashboard-title">Dashboard</div>
+            <div class="summary-cards">
+                <div class="summary-card">
+                    <div class="icon" style="background:#ffe5e5;color:#e74c3c"><i class="fa fa-box"></i></div>
+                    <div class="info">
+                        <span class="label">PRODUK</span>
+                        <span class="value">9</span>
+                        <span class="label">Jumlah produk yang tersedia</span>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="icon" style="background:#fff7e5;color:#f1c40f"><i class="fa fa-concierge-bell"></i></div>
+                    <div class="info">
+                        <span class="label">PELAYANAN</span>
+                        <span class="value">5</span>
+                        <span class="label">Pelayanan yang tersedia</span>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="icon" style="background:#e5f7ee;color:#27ae60"><i class="fa fa-shopping-cart"></i></div>
+                    <div class="info">
+                        <span class="label">PESANAN</span>
+                        <span class="value">4</span>
+                        <span class="label">Jumlah pesanan diterima</span>
+                    </div>
+                </div>
+                <div class="summary-card">
+                    <div class="icon" style="background:#e5f0ff;color:#2980b9"><i class="fa fa-money-bill-wave"></i></div>
+                    <div class="info">
+                        <span class="label">PENDAPATAN</span>
+                        <span class="currency">Rp</span> <span class="value">127.985,00</span>
+                        <span class="label">Total pendapatan</span>
+                    </div>
+                </div>
+            </div>
+            <div class="charts-row">
+                <div class="chart-card">
+                    <div class="chart-title">Ringkasan Penjualan</div>
+                    <canvas id="salesChart" height="120"></canvas>
+                </div>
+                <div class="chart-card small">
+                    <div class="chart-title">Pendapatan</div>
+                    <canvas id="incomeChart" height="120"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
     <script>
-    function logout() {
-        window.location.href = 'login.html';
-    }
+    // Chart.js dummy data
+    const salesCtx = document.getElementById('salesChart').getContext('2d');
+    new Chart(salesCtx, {
+        type: 'line',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu'],
+            datasets: [{
+                label: 'Penjualan',
+                data: [12, 19, 13, 15, 22, 18, 25, 20],
+                borderColor: '#435585',
+                backgroundColor: 'rgba(67,85,133,0.08)',
+                tension: 0.4,
+                fill: true,
+                pointRadius: 4,
+                pointBackgroundColor: '#435585',
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: '#e6ecf5' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
+    const incomeCtx = document.getElementById('incomeChart').getContext('2d');
+    new Chart(incomeCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu'],
+            datasets: [{
+                label: 'Pendapatan',
+                data: [20000, 30000, 25000, 40000, 35000, 42000, 38000, 50000],
+                backgroundColor: '#f7c873',
+                borderRadius: 8,
+            }]
+        },
+        options: {
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { beginAtZero: true, grid: { color: '#e6ecf5' } },
+                x: { grid: { display: false } }
+            }
+        }
+    });
     </script>
 </body>
 </html> 
