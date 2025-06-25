@@ -258,36 +258,49 @@
                 </form>
             </div>
             <div class="produk-grid" id="produkGrid">
-                <div class="produk-item">
-                    <img src="https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&w=400&q=80" alt="Syphon Coffee Maker">
-                    <div class="nama">Syphon Coffee Maker Manual Brew Vacuum Pot</div>
-                    <div class="harga">Rp 511.000</div>
-                </div>
-                <div class="produk-item">
-                    <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=400&q=80" alt="Electric Coffee Grinder">
-                    <div class="nama">Electric Coffee Grinder - 650N</div>
-                    <div class="harga">Rp 1.111.000</div>
-                </div>
-                <div class="produk-item">
-                    <img src="https://images.unsplash.com/photo-1464983953574-0892a716854b?auto=format&fit=crop&w=400&q=80" alt="Coffee Server">
-                    <div class="nama">coffee server / coffee pot 01 teko server kopi v60</div>
-                    <div class="harga">Rp 181.000</div>
-                </div>
-                <div class="produk-item">
-                    <img src="https://images.unsplash.com/photo-1519864600265-abb23847ef2c?auto=format&fit=crop&w=400&q=80" alt="Vietnam Drip">
-                    <div class="nama">Vietnam Drip Alat Pembuat Kopi Vietnam</div>
-                    <div class="harga">Rp 181.000</div>
-                </div>
+                <!-- Produk akan dimuat di sini oleh JavaScript -->
             </div>
         </div>
     </div>
+    <script src="data.js"></script>
     <script>
+    // --- Data Persistence Logic ---
+    let products;
+    const savedProducts = localStorage.getItem('products');
+
+    if (savedProducts) {
+        products = JSON.parse(savedProducts);
+    } else {
+        // Use the initial products from data.js and save to localStorage
+        products = initialProducts; 
+        localStorage.setItem('products', JSON.stringify(products));
+    }
+    // --- End of Data Persistence Logic ---
+    
     // Tampilkan form tambah produk
     const btnTambah = document.getElementById('btnTambah');
     const formProduk = document.getElementById('formProduk');
     const batalTambah = document.getElementById('batalTambah');
     btnTambah.onclick = () => { formProduk.style.display = 'block'; btnTambah.style.display = 'none'; };
     batalTambah.onclick = () => { formProduk.style.display = 'none'; btnTambah.style.display = 'inline-block'; };
+
+    // Muat produk ke dalam grid
+    const produkGrid = document.getElementById('produkGrid');
+    function loadProducts() {
+        produkGrid.innerHTML = '';
+        products.forEach(p => {
+            const item = document.createElement('div');
+            item.className = 'produk-item';
+            item.innerHTML = `
+                <a href="detail-produk.html?id=${p.id}" style="text-decoration: none; color: inherit;">
+                    <img src="${p.image}" alt="${p.name}">
+                    <div class="nama">${p.name}</div>
+                    <div class="harga">Rp ${p.price.toLocaleString('id-ID')}</div>
+                </a>
+            `;
+            produkGrid.appendChild(item);
+        });
+    }
 
     // Preview foto
     const fotoInput = document.getElementById('fotoInput');
@@ -306,7 +319,6 @@
 
     // Tambah produk ke grid
     const produkBaruForm = document.getElementById('produkBaruForm');
-    const produkGrid = document.getElementById('produkGrid');
     produkBaruForm.onsubmit = function(e) {
         e.preventDefault();
         const data = new FormData(produkBaruForm);
@@ -315,20 +327,28 @@
             imgSrc = previewFoto.querySelector('img') ? previewFoto.querySelector('img').src : '';
         }
         const nama = data.get('nama');
-        const harga = parseInt(data.get('harga')).toLocaleString('id-ID', {style:'currency',currency:'IDR',minimumFractionDigits:0}).replace(/,00$/, '');
-        const item = document.createElement('div');
-        item.className = 'produk-item';
-        item.innerHTML = `
-            <img src="${imgSrc || 'https://via.placeholder.com/90'}" alt="${nama}">
-            <div class="nama">${nama}</div>
-            <div class="harga">${harga}</div>
-        `;
-        produkGrid.appendChild(item);
+        const harga = parseInt(data.get('harga'));
+        const newProduct = {
+            id: products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1,
+            name: nama,
+            price: harga,
+            category: data.get('kategori'),
+            stock: data.get('stok'),
+            image: imgSrc || 'https://via.placeholder.com/90',
+            description: data.get('deskripsi')
+        };
+        products.push(newProduct);
+        localStorage.setItem('products', JSON.stringify(products)); // Save to localStorage
+        loadProducts(); // Muat ulang grid dengan produk baru
+
         produkBaruForm.reset();
         previewFoto.innerHTML = '';
         formProduk.style.display = 'none';
         btnTambah.style.display = 'inline-block';
     };
+
+    // Panggil fungsi untuk memuat produk saat halaman pertama kali dibuka
+    document.addEventListener('DOMContentLoaded', loadProducts);
     </script>
 </body>
 </html> 

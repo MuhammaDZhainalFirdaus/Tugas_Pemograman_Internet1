@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detail Produk - Toko Alat Kopi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: #e6ecf5; }
+        .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 220px; background: #263159; color: #fff; display: flex; flex-direction: column; z-index: 10; }
+        .sidebar .logo { font-size: 1.6rem; font-weight: bold; padding: 28px 0 18px 0; text-align: center; letter-spacing: 1px; background: #1b2242; }
+        .sidebar nav { flex: 1; display: flex; flex-direction: column; gap: 6px; margin-top: 18px; }
+        .sidebar nav a { color: #fff; text-decoration: none; padding: 12px 32px; display: flex; align-items: center; gap: 16px; font-size: 1.05rem; border-left: 4px solid transparent; transition: all 0.2s ease-in-out; }
+        .sidebar nav a.active { background: #435585; border-left: 4px solid #f7c873; }
+        .sidebar nav a:hover { background: #435585; border-left: 4px solid #f7c873; transform: translateX(8px); }
+        .sidebar .bottom { margin-bottom: 24px; text-align: center; }
+        .sidebar .bottom a { color: #fff; font-size: 1.1rem; text-decoration: none; padding: 8px 0; display: block; }
+        .main { margin-left: 220px; min-height: 100vh; background: #e6ecf5; }
+        .topbar { background: #435585; color: #fff; padding: 18px 32px; display: flex; align-items: center; justify-content: space-between; }
+        .topbar .search { background: #fff; border-radius: 24px; padding: 6px 18px; display: flex; align-items: center; width: 320px; }
+        .topbar .search input { border: none; outline: none; font-size: 1rem; background: transparent; margin-left: 8px; width: 100%; }
+        .topbar .user { display: flex; align-items: center; gap: 12px; }
+        .topbar .user .fa-user-circle { font-size: 1.7rem; }
+        .topbar .user .name { font-weight: 500; font-size: 1.08rem; }
+        .detail-content { padding: 32px; }
+        .detail-header { font-size: 1.5rem; font-weight: 600; margin-bottom: 24px; color: #263159; }
+        .detail-container { display: flex; gap: 32px; flex-wrap: wrap; background: #fff; padding: 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(38,49,89,0.07); }
+        .product-image { flex: 1; min-width: 250px; text-align: center; }
+        .product-image img { max-width: 100%; height: auto; max-height: 300px; border-radius: 8px; }
+        .product-info { flex: 2; min-width: 300px; }
+        .product-info h2 { margin-top: 0; color: #263159; }
+        .product-info .price { font-size: 1.4rem; font-weight: bold; color: #435585; margin-bottom: 16px; }
+        .info-grid { display: grid; grid-template-columns: 100px 1fr; gap: 10px; margin-bottom: 16px; }
+        .info-grid .label { color: #555; }
+        .info-grid .value { font-weight: 500; }
+        .description { margin-top: 16px; }
+        .description .label { font-weight: 600; margin-bottom: 8px; }
+        .description .text { color: #555; line-height: 1.6; }
+        .actions { margin-top: 24px; }
+        .btn-kembali { background: #435585; color: #fff; border: none; border-radius: 6px; padding: 8px 24px; font-size: 1rem; cursor: pointer; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo"><i class="fa fa-coffee"></i> Toko Kopi</div>
+        <nav>
+            <a href="dashboard.html"><i class="fa fa-tachometer-alt"></i> Dashboard</a>
+            <a href="#kategori"><i class="fa fa-list-ul"></i> Kategori Produk</a>
+            <a href="produk.html" class="active"><i class="fa fa-shopping-bag"></i> Produk</a>
+            <a href="pesanan.html"><i class="fa fa-receipt"></i> Pesanan</a>
+            <a href="#kupon"><i class="fa fa-ticket-alt"></i> Kupon</a>
+            <a href="#pembayaran"><i class="fa fa-money-check-alt"></i> Pembayaran</a>
+            <a href="#pelanggan"><i class="fa fa-users"></i> Pelanggan</a>
+            <a href="#review"><i class="fa fa-edit"></i> Review Pelanggan</a>
+            <a href="#kontak"><i class="fa fa-phone"></i> Kontak</a>
+        </nav>
+        <div class="bottom">
+            <a href="login.html"><i class="fa fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </div>
+    <div class="main">
+        <div class="topbar">
+            <div class="search"><i class="fa fa-search" style="color:#888"></i><input type="text" placeholder="Cari..."></div>
+            <div class="user"><i class="fa fa-user-circle"></i><span class="name">Admin</span></div>
+        </div>
+        <div class="detail-content">
+            <div class="detail-header">Detail Produk</div>
+            <div class="detail-container" id="detailContainer">
+                <!-- Detail Produk akan dimuat di sini oleh JavaScript -->
+            </div>
+            <div class="actions">
+                <a href="produk.html" class="btn-kembali">Kembali</a>
+                <a href="#" id="editBtn" class="btn-kembali" style="background-color: #3498db; margin-left: 10px;">Edit</a>
+            </div>
+        </div>
+    </div>
+    <script src="data.js"></script>
+    <script>
+        // --- Data Persistence Logic ---
+        let products;
+        const savedProducts = localStorage.getItem('products');
+
+        if (savedProducts) {
+            products = JSON.parse(savedProducts);
+        } else {
+            // This case is unlikely if users start from produk.html, but as a fallback:
+            products = initialProducts; 
+            localStorage.setItem('products', JSON.stringify(products));
+        }
+        // --- End of Data Persistence Logic ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const productId = parseInt(params.get('id'));
+            const product = products.find(p => p.id === productId);
+
+            const container = document.getElementById('detailContainer');
+            const editBtn = document.getElementById('editBtn');
+
+            if (product) {
+                editBtn.href = `edit-produk.html?id=${product.id}`;
+                container.innerHTML = `
+                    <div class="product-image">
+                        <img src="${product.image}" alt="${product.name}">
+                    </div>
+                    <div class="product-info">
+                        <h2>${product.name}</h2>
+                        <div class="price">Rp ${product.price.toLocaleString('id-ID')}</div>
+                        <div class="info-grid">
+                            <span class="label">Kategori</span><span class="value">${product.category}</span>
+                            <span class="label">Stok</span><span class="value">${product.stock}</span>
+                        </div>
+                        <div class="description">
+                            <div class="label">Deskripsi</div>
+                            <div class="text">${product.description}</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = '<p>Produk tidak ditemukan.</p>';
+            }
+        });
+    </script>
+</body>
+</html> 

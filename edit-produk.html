@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Produk - Toko Alat Kopi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: #e6ecf5; }
+        .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 220px; background: #263159; color: #fff; display: flex; flex-direction: column; z-index: 10; }
+        .sidebar .logo { font-size: 1.6rem; font-weight: bold; padding: 28px 0 18px 0; text-align: center; letter-spacing: 1px; background: #1b2242; }
+        .sidebar nav { flex: 1; display: flex; flex-direction: column; gap: 6px; margin-top: 18px; }
+        .sidebar nav a { color: #fff; text-decoration: none; padding: 12px 32px; display: flex; align-items: center; gap: 16px; font-size: 1.05rem; border-left: 4px solid transparent; transition: all 0.2s ease-in-out; }
+        .sidebar nav a.active { background: #435585; border-left: 4px solid #f7c873; }
+        .sidebar nav a:hover { background: #435585; border-left: 4px solid #f7c873; transform: translateX(8px); }
+        .sidebar .bottom { margin-bottom: 24px; text-align: center; }
+        .sidebar .bottom a { color: #fff; font-size: 1.1rem; text-decoration: none; padding: 8px 0; display: block; }
+        .main { margin-left: 220px; min-height: 100vh; background: #e6ecf5; }
+        .topbar { background: #435585; color: #fff; padding: 18px 32px; display: flex; align-items: center; justify-content: space-between; }
+        .topbar .search { background: #fff; border-radius: 24px; padding: 6px 18px; display: flex; align-items: center; width: 320px; }
+        .topbar .search input { border: none; outline: none; font-size: 1rem; background: transparent; margin-left: 8px; width: 100%; }
+        .topbar .user { display: flex; align-items: center; gap: 12px; }
+        .topbar .user .fa-user-circle { font-size: 1.7rem; }
+        .topbar .user .name { font-weight: 500; font-size: 1.08rem; }
+        
+        .edit-content { padding: 32px; }
+        .edit-header { font-size: 1.5rem; font-weight: 600; margin-bottom: 24px; color: #263159; }
+        
+        .form-container { background: #fff; padding: 24px; border-radius: 12px; box-shadow: 0 2px 8px rgba(38,49,89,0.07); }
+        .form-body { display: flex; gap: 32px; flex-wrap: wrap; }
+        .form-left { flex: 2; min-width: 300px; }
+        .form-right { flex: 1; min-width: 250px; }
+
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; margin-bottom: 6px; color: #555; }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1.2px solid #d1d5db;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        .photo-upload .current-photo { margin-bottom: 12px; }
+        .photo-upload img { max-width: 100%; height: auto; max-height: 200px; border-radius: 8px; }
+        .photo-upload .photo-actions button {
+            background: #eee;
+            border: 1px solid #ddd;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 8px;
+        }
+        .photo-upload .photo-actions button.ganti {
+            background: #435585;
+            color: #fff;
+            border: none;
+        }
+        .form-actions { margin-top: 24px; text-align: right; }
+        .btn-simpan { background: #27ae60; color: #fff; border: none; border-radius: 6px; padding: 10px 24px; font-size: 1rem; cursor: pointer; }
+
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo"><i class="fa fa-coffee"></i> Toko Kopi</div>
+        <nav>
+            <a href="dashboard.html"><i class="fa fa-tachometer-alt"></i> Dashboard</a>
+            <a href="#kategori"><i class="fa fa-list-ul"></i> Kategori Produk</a>
+            <a href="produk.html" class="active"><i class="fa fa-shopping-bag"></i> Produk</a>
+            <a href="pesanan.html"><i class="fa fa-receipt"></i> Pesanan</a>
+            <a href="#kupon"><i class="fa fa-ticket-alt"></i> Kupon</a>
+            <a href="#pembayaran"><i class="fa fa-money-check-alt"></i> Pembayaran</a>
+            <a href="#pelanggan"><i class="fa fa-users"></i> Pelanggan</a>
+            <a href="#review"><i class="fa fa-edit"></i> Review Pelanggan</a>
+            <a href="#kontak"><i class="fa fa-phone"></i> Kontak</a>
+        </nav>
+        <div class="bottom">
+            <a href="login.html"><i class="fa fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </div>
+    <div class="main">
+        <div class="topbar">
+            <div class="search"><i class="fa fa-search" style="color:#888"></i><input type="text" placeholder="Cari..."></div>
+            <div class="user"><i class="fa fa-user-circle"></i><span class="name">Admin</span></div>
+        </div>
+        <div class="edit-content">
+            <div class="edit-header">Edit Produk</div>
+            <form id="editForm" class="form-container">
+                <div class="form-body">
+                    <div class="form-left">
+                        <div class="form-group">
+                            <label for="kategori">Kategori</label>
+                            <select id="kategori" name="kategori">
+                                <option value="Manual Brew">Manual Brew</option>
+                                <option value="Grinder">Grinder</option>
+                                <option value="Aksesoris">Aksesoris</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="nama">Nama Produk</label>
+                            <input type="text" id="nama" name="nama" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="harga">Harga</label>
+                            <input type="number" id="harga" name="harga" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="stok">Stok</label>
+                            <input type="number" id="stok" name="stok" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="deskripsi">Deskripsi</label>
+                            <textarea id="deskripsi" name="deskripsi" rows="4"></textarea>
+                        </div>
+                    </div>
+                    <div class="form-right">
+                        <div class="form-group photo-upload">
+                            <label>Foto</label>
+                            <div id="current-photo" class="current-photo"></div>
+                            <div class="photo-actions">
+                                <button type="button" class="ganti">Ganti</button>
+                                <button type="button">Hapus</button>
+                            </div>
+                            <input type="file" id="foto" name="foto" style="display:none;">
+                        </div>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" class="btn-simpan">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="data.js"></script>
+    <script>
+        // --- Data Persistence Logic ---
+        let products;
+        const savedProducts = localStorage.getItem('products');
+
+        if (savedProducts) {
+            products = JSON.parse(savedProducts);
+        } else {
+            // Use the initial products from data.js and save to localStorage
+            products = initialProducts; 
+            localStorage.setItem('products', JSON.stringify(products));
+        }
+        // --- End of Data Persistence Logic ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const productId = parseInt(params.get('id'));
+            const product = products.find(p => p.id === productId);
+
+            if (product) {
+                document.getElementById('kategori').value = product.category;
+                document.getElementById('nama').value = product.name;
+                document.getElementById('harga').value = product.price;
+                document.getElementById('stok').value = product.stock;
+                document.getElementById('deskripsi').value = product.description;
+                document.getElementById('current-photo').innerHTML = `<img src="${product.image}" alt="Foto Produk">`;
+            } else {
+                document.querySelector('.edit-content').innerHTML = '<h2>Produk tidak ditemukan.</h2>';
+            }
+        });
+
+        document.getElementById('editForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const params = new URLSearchParams(window.location.search);
+            const productId = parseInt(params.get('id'));
+            const productIndex = products.findIndex(p => p.id === productId);
+
+            if (productIndex !== -1) {
+                products[productIndex].category = document.getElementById('kategori').value;
+                products[productIndex].name = document.getElementById('nama').value;
+                products[productIndex].price = parseInt(document.getElementById('harga').value);
+                products[productIndex].stock = parseInt(document.getElementById('stok').value);
+                products[productIndex].description = document.getElementById('deskripsi').value;
+                
+                // Save updated array to localStorage
+                localStorage.setItem('products', JSON.stringify(products));
+
+                alert('Produk berhasil diperbarui!');
+                window.location.href = `detail-produk.html?id=${productId}`;
+            } else {
+                alert('Gagal memperbarui. Produk tidak ditemukan.');
+            }
+        });
+    </script>
+</body>
+</html> 
