@@ -201,6 +201,13 @@
                     <input type="password" id="login_password" name="password" placeholder="********" required>
                 </div>
             </div>
+            <div class="input-group">
+                <label for="login_role">LOGIN SEBAGAI</label>
+                <select id="login_role" name="login_role" required style="width:100%;padding:10px;border-radius:6px;border:1.5px solid #d1d5db;font-size:1rem;">
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
             <div class="options">
                 <span></span>
                 <label><input type="checkbox" name="remember"> Ingat saya</label>
@@ -282,15 +289,23 @@
         e.preventDefault();
         const username = document.getElementById('login_username').value.trim();
         const password = document.getElementById('login_password').value;
+        const role = document.getElementById('login_role').value;
         let users = JSON.parse(localStorage.getItem('users')) || [];
-        const user = users.find(u => (u.username === username || u.email === username) && u.password === password);
+        const user = users.find(u =>
+            (u.username === username || u.email === username) &&
+            u.password === password &&
+            u.role === role
+        );
         if (!user) {
-            alert('Username/email atau password salah!');
+            alert('Username/email, password, atau role salah!');
             return;
         }
-        // Simpan info login ke localStorage jika perlu
         localStorage.setItem('loggedInUser', JSON.stringify(user));
-        window.location.href = 'dashboard.html';
+        if (role === 'admin') {
+            window.location.href = 'dashboard.html';
+        } else {
+            window.location.href = 'dashboard-user.html';
+        }
     };
     // Register logic
     registerForm.onsubmit = function(e) {
