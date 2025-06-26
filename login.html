@@ -185,6 +185,7 @@
             <button id="tabRegister" type="button" style="flex:1;padding:10px 0;font-weight:600;font-size:1rem;border:none;border-radius:0 6px 6px 0;background:#fff;color:#222;cursor:pointer;transition:background 0.2s;">Register</button>
         </div>
         <div id="notifSuccess" style="display:none;color:#2e7d32;background:#e8f5e9;padding:8px 12px;border-radius:6px;margin-bottom:12px;font-size:0.98rem;width:100%;text-align:center;"></div>
+        <div id="notifError" style="display:none;color:#c62828;background:#ffcdd2;padding:8px 12px;border-radius:6px;margin-bottom:12px;font-size:0.98rem;width:100%;text-align:center;"></div>
         <form id="loginForm" autocomplete="off">
             <h2 style="margin-top:0">Login Akun</h2>
             <div class="input-group">
@@ -261,84 +262,6 @@
             <button type="submit">REGISTER</button>
         </form>
     </div>
-    <script>
-    // Tab logic
-    const tabLogin = document.getElementById('tabLogin');
-    const tabRegister = document.getElementById('tabRegister');
-    const loginForm = document.getElementById('loginForm');
-    const registerForm = document.getElementById('registerForm');
-    const notifSuccess = document.getElementById('notifSuccess');
-    function showLogin() {
-        loginForm.style.display = '';
-        registerForm.style.display = 'none';
-        tabLogin.style.background = '#f3f3f3';
-        tabRegister.style.background = '#fff';
-        notifSuccess.style.display = 'none';
-    }
-    function showRegister() {
-        loginForm.style.display = 'none';
-        registerForm.style.display = '';
-        tabLogin.style.background = '#fff';
-        tabRegister.style.background = '#f3f3f3';
-        notifSuccess.style.display = 'none';
-    }
-    tabLogin.onclick = showLogin;
-    tabRegister.onclick = showRegister;
-    // Login logic
-    loginForm.onsubmit = function(e) {
-        e.preventDefault();
-        const username = document.getElementById('login_username').value.trim();
-        const password = document.getElementById('login_password').value;
-        const role = document.getElementById('login_role').value;
-        let users = JSON.parse(localStorage.getItem('users')) || [];
-        const user = users.find(u =>
-            (u.username === username || u.email === username) &&
-            u.password === password &&
-            u.role === role
-        );
-        if (!user) {
-            alert('Username/email, password, atau role salah!');
-            return;
-        }
-        localStorage.setItem('loggedInUser', JSON.stringify(user));
-        if (role === 'admin') {
-            window.location.href = 'dashboard.html';
-        } else {
-            window.location.href = 'dashboard-user.html';
-        }
-    };
-    // Register logic
-    registerForm.onsubmit = function(e) {
-        e.preventDefault();
-        const nama = document.getElementById('reg_nama').value.trim();
-        const email = document.getElementById('reg_email').value.trim();
-        const username = document.getElementById('reg_username').value.trim();
-        const password = document.getElementById('reg_password').value;
-        const confirmPassword = document.getElementById('reg_confirm_password').value;
-        const role = document.getElementById('reg_role').value;
-        if (password !== confirmPassword) {
-            alert('Konfirmasi password tidak cocok!');
-            return;
-        }
-        let users = JSON.parse(localStorage.getItem('users')) || [];
-        if (users.some(u => u.username === username)) {
-            alert('Username sudah terdaftar!');
-            return;
-        }
-        if (users.some(u => u.email === email)) {
-            alert('Email sudah terdaftar!');
-            return;
-        }
-        users.push({ nama, email, username, password, role });
-        localStorage.setItem('users', JSON.stringify(users));
-        notifSuccess.textContent = 'Registrasi berhasil! Silakan login.';
-        notifSuccess.style.display = '';
-        showLogin();
-        // Bersihkan form register
-        registerForm.reset();
-    };
-    // Default: tampilkan login
-    showLogin();
-    </script>
+    <script src="login-script.js"></script>
 </body>
 </html> 
