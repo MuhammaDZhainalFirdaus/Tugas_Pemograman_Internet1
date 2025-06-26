@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Saya - Toko Alat Kopi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: #e6ecf5; }
+        .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 220px; background: #263159; color: #fff; display: flex; flex-direction: column; z-index: 10; overflow-y: auto; overflow-x: hidden; }
+        .sidebar .profile { display: flex; flex-direction: column; align-items: center; padding: 32px 0 18px 0; background: #1b2242; }
+        .sidebar .profile .avatar { width: 56px; height: 56px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; color: #263159; margin-bottom: 10px; }
+        .sidebar .profile .name { font-weight: 600; font-size: 1.08rem; color: #fff; }
+        .sidebar nav { flex: 1; display: flex; flex-direction: column; gap: 6px; margin-top: 18px; min-height: 0; }
+        .sidebar nav a { color: #fff; text-decoration: none; padding: 12px 32px; display: flex; align-items: center; gap: 16px; font-size: 1.05rem; border-left: 4px solid transparent; transition: all 0.2s ease-in-out; }
+        .sidebar nav a.active { background: #435585; border-left: 4px solid #f7c873; }
+        .sidebar nav a:hover { background: #435585; border-left: 4px solid #f7c873; transform: translateX(8px); }
+        .sidebar .bottom { margin-bottom: 24px; text-align: center; flex-shrink: 0; }
+        .sidebar .bottom a { color: #fff; font-size: 1.1rem; text-decoration: none; padding: 8px 0; display: block; }
+        .main { margin-left: 220px; min-height: 100vh; background: #e6ecf5; }
+        .topbar { background: #435585; color: #fff; padding: 18px 32px; display: flex; align-items: center; justify-content: space-between; }
+        .order-content { padding: 32px 32px 0 32px; }
+        .order-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 24px; color: #263159; }
+        .order-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(38,49,89,0.07); overflow: hidden; }
+        .order-table th, .order-table td { padding: 12px 10px; text-align: left; }
+        .order-table th { background: #435585; color: #fff; font-weight: 500; }
+        .order-table tr:not(:last-child) { border-bottom: 1px solid #e6ecf5; }
+        .order-table td.status.selesai { color: #27ae60; font-weight: 600; }
+        .order-table td.status.proses { color: #f1c40f; font-weight: 600; }
+        .order-table td.status.batal { color: #e74c3c; font-weight: 600; }
+        .order-table td.aksi a { color: #fff; border: none; border-radius: 6px; padding: 6px 12px; font-size: 0.9rem; cursor: pointer; margin-right: 6px; text-decoration: none; display: inline-block; background: #3498db; }
+        @media (max-width: 900px) { .main { margin-left: 0; } .sidebar { position: static; width: 100%; flex-direction: row; height: auto; } .order-content { padding: 18px 6px 0 6px; } }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="profile">
+            <div class="avatar"><i class="fa fa-user"></i></div>
+            <div class="name" id="sidebarName">User</div>
+        </div>
+        <nav>
+            <a href="dashboard-user.html"><i class="fa fa-tachometer-alt"></i> Dashboard</a>
+            <a href="pesanan-user.html" class="active"><i class="fa fa-shopping-cart"></i> Order Saya</a>
+            <a href="pembayaran-user.html"><i class="fa fa-money-check-alt"></i> Pembayaran</a>
+            <a href="review-user.html"><i class="fa fa-edit"></i> Review</a>
+        </nav>
+        <div class="bottom">
+            <a href="login.html" id="logoutBtn"><i class="fa fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </div>
+    <div class="main">
+        <div class="topbar">
+            <div style="font-size:1.2rem;font-weight:500;">Order Saya</div>
+            <div class="user">
+                <i class="fa fa-user-circle"></i>
+                <span class="name" id="topbarName">User</span>
+            </div>
+        </div>
+        <div class="order-content">
+            <div class="order-title">Daftar Order Saya</div>
+            <table class="order-table">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Produk</th>
+                        <th>Jumlah</th>
+                        <th>Total Harga</th>
+                        <th>Status</th>
+                        <th>Tanggal</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="ordersTableBody">
+                    <!-- Data order user akan dimuat di sini -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+    // Ambil user login
+    const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+    if (loggedInUser) {
+        document.getElementById('sidebarName').textContent = loggedInUser.nama || loggedInUser.username;
+        document.getElementById('topbarName').textContent = loggedInUser.nama || loggedInUser.username;
+    }
+    document.getElementById('logoutBtn').onclick = function() {
+        localStorage.removeItem('loggedInUser');
+    };
+    // Ambil data order dari localStorage
+    let orders = JSON.parse(localStorage.getItem('orders')) || [];
+    // Filter hanya order milik user login
+    if (loggedInUser) {
+        orders = orders.filter(order => order.customerUsername === loggedInUser.username);
+    }
+    const tableBody = document.getElementById('ordersTableBody');
+    function getStatusClass(status) {
+        switch (status.toLowerCase()) {
+            case 'selesai': return 'selesai';
+            case 'proses': return 'proses';
+            case 'batal': return 'batal';
+            default: return '';
+        }
+    }
+    function loadOrders() {
+        tableBody.innerHTML = '';
+        orders.forEach((order, idx) => {
+            const productsText = order.products.map(p => `${p.name} (x${p.quantity})`).join(', ');
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${idx + 1}</td>
+                <td>${productsText}</td>
+                <td>1</td>
+                <td>Rp ${order.totalPrice.toLocaleString('id-ID')}</td>
+                <td class="status ${getStatusClass(order.status)}">${order.status}</td>
+                <td>${order.date}</td>
+                <td class="aksi">
+                    <a href="detail-pesanan.html?id=${order.id}" class="btn-detail"><i class="fa fa-eye"></i></a>
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
+    }
+    document.addEventListener('DOMContentLoaded', loadOrders);
+    </script>
+</body>
+</html> 

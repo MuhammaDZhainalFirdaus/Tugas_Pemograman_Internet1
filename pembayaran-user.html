@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembayaran Saya - Toko Alat Kopi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: #e6ecf5; }
+        .sidebar { position: fixed; left: 0; top: 0; bottom: 0; width: 220px; background: #263159; color: #fff; display: flex; flex-direction: column; z-index: 10; }
+        .sidebar .profile { display: flex; flex-direction: column; align-items: center; padding: 32px 0 18px 0; background: #1b2242; }
+        .sidebar .profile .avatar { width: 56px; height: 56px; border-radius: 50%; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; color: #263159; margin-bottom: 10px; }
+        .sidebar .profile .name { font-weight: 600; font-size: 1.08rem; color: #fff; }
+        .sidebar nav { flex: 1; display: flex; flex-direction: column; gap: 6px; margin-top: 18px; }
+        .sidebar nav a { color: #fff; text-decoration: none; padding: 12px 32px; display: flex; align-items: center; gap: 16px; font-size: 1.05rem; border-left: 4px solid transparent; transition: all 0.2s ease-in-out; }
+        .sidebar nav a.active { background: #435585; border-left: 4px solid #f7c873; }
+        .sidebar nav a:hover { background: #435585; border-left: 4px solid #f7c873; transform: translateX(8px); }
+        .sidebar .bottom { margin-top: auto; margin-bottom: 24px; text-align: center; }
+        .sidebar .bottom a { color: #fff; font-size: 1.1rem; text-decoration: none; padding: 8px 0; display: block; }
+        .main { margin-left: 220px; min-height: 100vh; background: #e6ecf5; }
+        .topbar { background: #435585; color: #fff; padding: 18px 32px; display: flex; align-items: center; justify-content: space-between; }
+        .pembayaran-content { padding: 32px; }
+        .pembayaran-title { font-size: 1.5rem; font-weight: 600; margin-bottom: 24px; color: #263159; }
+        .pembayaran-table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(38,49,89,0.07); overflow: hidden; }
+        .pembayaran-table th, .pembayaran-table td { padding: 12px 10px; text-align: left; }
+        .pembayaran-table th { background: #435585; color: #fff; font-weight: 500; }
+        .pembayaran-table tr:not(:last-child) { border-bottom: 1px solid #e6ecf5; }
+        .status-badge { padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: 500; color: #fff; }
+        .status-lunas { background-color: #27ae60; }
+        .status-pending { background-color: #f1c40f; }
+        .status-gagal { background-color: #e74c3c; }
+        @media (max-width: 900px) { .main { margin-left: 0; } .sidebar { position: static; width: 100%; } .pembayaran-content { padding: 18px; } }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="profile">
+            <div class="avatar"><i class="fa fa-user"></i></div>
+            <div class="name" id="sidebarName">User</div>
+        </div>
+        <nav>
+            <a href="dashboard-user.html"><i class="fa fa-tachometer-alt"></i> Dashboard</a>
+            <a href="pesanan-user.html"><i class="fa fa-shopping-cart"></i> Order Saya</a>
+            <a href="pembayaran-user.html" class="active"><i class="fa fa-money-check-alt"></i> Pembayaran</a>
+            <a href="review-user.html"><i class="fa fa-edit"></i> Review</a>
+        </nav>
+        <div class="bottom">
+            <a href="login.html" id="logoutBtn"><i class="fa fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </div>
+    <div class="main">
+        <div class="topbar">
+            <div style="font-size:1.2rem;font-weight:500;">Riwayat Pembayaran</div>
+            <div class="user">
+                <i class="fa fa-user-circle"></i>
+                <span class="name" id="topbarName">User</span>
+            </div>
+        </div>
+        <div class="pembayaran-content">
+            <div class="pembayaran-title">Daftar Pembayaran Saya</div>
+            <table class="pembayaran-table">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>ID Pesanan</th>
+                        <th>Tanggal</th>
+                        <th>Total</th>
+                        <th>Metode</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="pembayaranTableBody">
+                    <!-- Data pembayaran user akan dimuat di sini -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script>
+    const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
+    if (loggedInUser) {
+        document.getElementById('sidebarName').textContent = loggedInUser.nama || loggedInUser.username;
+        document.getElementById('topbarName').textContent = loggedInUser.nama || loggedInUser.username;
+    }
+    document.getElementById('logoutBtn').onclick = function() {
+        localStorage.removeItem('loggedInUser');
+    };
+
+    function getStatusBadge(status) {
+        const statusClass = status.toLowerCase().replace(' ', '-');
+        return `<span class="status-badge status-${statusClass}">${status}</span>`;
+    }
+
+    function loadPembayaran() {
+        let allPembayaran = JSON.parse(localStorage.getItem('pembayaran')) || [];
+        let userPembayaran = [];
+        if (loggedInUser) {
+            userPembayaran = allPembayaran.filter(p => p.customerUsername === loggedInUser.username);
+        }
+        const tableBody = document.getElementById('pembayaranTableBody');
+        tableBody.innerHTML = '';
+        userPembayaran.forEach((p, idx) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${idx + 1}</td>
+                <td>#${p.orderId}</td>
+                <td>${p.tanggal}</td>
+                <td>Rp ${p.total.toLocaleString('id-ID')}</td>
+                <td>${p.metode}</td>
+                <td>${getStatusBadge(p.status)}</td>
+            `;
+            tableBody.appendChild(row);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', loadPembayaran);
+    </script>
+</body>
+</html> 
