@@ -28,7 +28,9 @@
         .order-table td.status.selesai { color: #27ae60; font-weight: 600; }
         .order-table td.status.proses { color: #f1c40f; font-weight: 600; }
         .order-table td.status.batal { color: #e74c3c; font-weight: 600; }
-        .order-table td.aksi a { color: #fff; border: none; border-radius: 6px; padding: 6px 12px; font-size: 0.9rem; cursor: pointer; margin-right: 6px; text-decoration: none; display: inline-block; background: #3498db; }
+        .order-table td.aksi a { color: #fff; border: none; border-radius: 6px; padding: 6px 12px; font-size: 0.9rem; cursor: pointer; margin-right: 6px; text-decoration: none; display: inline-block; }
+        .order-table td.aksi a.btn-detail { background: #3498db; }
+        .order-table td.aksi a.btn-hapus { background: #e74c3c; }
         @media (max-width: 900px) { .main { margin-left: 0; } .sidebar { position: static; width: 100%; flex-direction: row; height: auto; } .order-content { padding: 18px 6px 0 6px; } }
     </style>
 </head>
@@ -77,49 +79,96 @@
         </div>
     </div>
     <script>
-    // Ambil user login
-    const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
-    if (loggedInUser) {
-        document.getElementById('sidebarName').textContent = loggedInUser.nama || loggedInUser.username;
-        document.getElementById('topbarName').textContent = loggedInUser.nama || loggedInUser.username;
-    }
-    document.getElementById('logoutBtn').onclick = function() {
-        localStorage.removeItem('loggedInUser');
-    };
-    // Ambil data order dari localStorage
-    let orders = JSON.parse(localStorage.getItem('orders')) || [];
-    // Filter hanya order milik user login
-    if (loggedInUser) {
-        orders = orders.filter(order => order.customerUsername === loggedInUser.username);
-    }
-    const tableBody = document.getElementById('ordersTableBody');
-    function getStatusClass(status) {
-        switch (status.toLowerCase()) {
-            case 'selesai': return 'selesai';
-            case 'proses': return 'proses';
-            case 'batal': return 'batal';
-            default: return '';
+    // Fungsi untuk mengambil dan menampilkan pesanan
+    async function loadOrders() {
+        const tableBody = document.getElementById('ordersTableBody');
+        tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Memuat data...</td></tr>';
+
+        try {
+            const response = await fetch('get_pesanan_user.php');
+            const orders = await response.json();
+
+            // Cek jika ada error dari server (misal: belum login)
+            if (orders.status === 'error') {
+                tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: red;">Error: ${orders.message}</td></tr>`;
+                // Redirect ke login jika akses ditolak
+                if(orders.message.includes("Akses ditolak")) {
+                    setTimeout(() => window.location.href = 'login.html', 2000);
+                }
+                return;
+            }
+
+            if (orders.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Anda belum memiliki pesanan.</td></tr>';
+                return;
+            }
+
+            tableBody.innerHTML = ''; // Kosongkan tabel sebelum diisi
+            orders.forEach((order, idx) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${idx + 1}</td>
+                    <td>${order.nama_produk}</td>
+                    <td>${order.jumlah}</td>
+                    <td>Rp ${parseFloat(order.total_harga).toLocaleString('id-ID')}</td>
+                    <td class="status ${order.status.toLowerCase()}">${order.status}</td>
+                    <td>${new Date(order.tanggal_order).toLocaleDateString('id-ID')}</td>
+                    <td class="aksi" data-order-id="${order.id_order}">
+                        <a href="detail-pesanan.html?id=${order.id_order}" class="btn-detail" title="Lihat Detail"><i class="fa fa-eye"></i></a>
+                        <a href="#" class="btn-hapus" title="Hapus Pesanan"><i class="fa fa-trash"></i></a>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+
+            // Tambahkan event listener untuk semua tombol hapus
+            document.querySelectorAll('.btn-hapus').forEach(button => {
+                button.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    
+                    const orderId = this.closest('td').dataset.orderId;
+                    
+                    if (confirm('Apakah Anda yakin ingin menghapus pesanan ini?')) {
+                        try {
+                            const response = await fetch('hapus_pesanan.php', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify({ id_order: orderId })
+                            });
+
+                            const result = await response.json();
+
+                            if (result.status === 'success') {
+                                alert(result.message);
+                                loadOrders(); // Muat ulang daftar pesanan
+                            } else {
+                                alert('Error: ' + result.message);
+                            }
+                        } catch (error) {
+                            alert('Gagal menghubungi server.');
+                            console.error('Error deleting order:', error);
+                        }
+                    }
+                });
+            });
+
+        } catch (error) {
+            tableBody.innerHTML = `<tr><td colspan="7" style="text-align:center; color: red;">Gagal memuat data pesanan.</td></tr>`;
+            console.error('Error fetching orders:', error);
         }
     }
-    function loadOrders() {
-        tableBody.innerHTML = '';
-        orders.forEach((order, idx) => {
-            const productsText = order.products.map(p => `${p.name} (x${p.quantity})`).join(', ');
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${idx + 1}</td>
-                <td>${productsText}</td>
-                <td>1</td>
-                <td>Rp ${order.totalPrice.toLocaleString('id-ID')}</td>
-                <td class="status ${getStatusClass(order.status)}">${order.status}</td>
-                <td>${order.date}</td>
-                <td class="aksi">
-                    <a href="detail-pesanan.html?id=${order.id}" class="btn-detail"><i class="fa fa-eye"></i></a>
-                </td>
-            `;
-            tableBody.appendChild(row);
-        });
-    }
+
+    // Mengambil info user dari session (jika perlu untuk tampilan)
+    // Untuk keamanan, data sensitif tidak lagi disimpan di localStorage
+    document.getElementById('logoutBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        // Nanti bisa ditambahkan fetch ke logout.php untuk menghapus session di server
+        window.location.href = 'login.html';
+    });
+
+    // Panggil fungsi saat halaman dimuat
     document.addEventListener('DOMContentLoaded', loadOrders);
     </script>
 </body>

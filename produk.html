@@ -263,94 +263,132 @@
                 </form>
             </div>
             <div class="produk-grid" id="produkGrid">
-                <!-- Produk akan dimuat di sini oleh JavaScript -->
+                <!-- Produk akan dimuat di sini secara dinamis -->
             </div>
         </div>
     </div>
-    <script src="data.js"></script>
     <script>
-    // --- Data Persistence Logic ---
-    let products;
-    const savedProducts = localStorage.getItem('products');
+    async function loadProducts() {
+        const produkGrid = document.getElementById('produkGrid');
+        produkGrid.innerHTML = '<p>Memuat produk...</p>';
 
-    if (savedProducts) {
-        products = JSON.parse(savedProducts);
-    } else {
-        // Use the initial products from data.js and save to localStorage
-        products = initialProducts; 
-        localStorage.setItem('products', JSON.stringify(products));
+        try {
+            const response = await fetch('get_produk.php');
+            const products = await response.json();
+
+            if (products.status === 'error') {
+                produkGrid.innerHTML = `<p style="color: red;">Error: ${products.message}</p>`;
+                return;
+            }
+
+            if (products.length === 0) {
+                produkGrid.innerHTML = '<p>Belum ada produk yang ditambahkan.</p>';
+                return;
+            }
+
+            produkGrid.innerHTML = ''; // Kosongkan grid
+            products.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'produk-item';
+                // Arahkan path gambar ke folder 'uploads'
+                const imageUrl = product.gambar ? `uploads/${product.gambar}` : 'https://via.placeholder.com/100';
+                
+                productCard.innerHTML = `
+                    <img src="${imageUrl}" alt="${product.nama_produk}">
+                    <div class="nama">${product.nama_produk}</div>
+                    <div class="harga">Rp ${product.harga.toLocaleString('id-ID')}</div>
+                    <div class="aksi-produk" data-id="${product.id}">
+                        <button class="btn-edit-produk"><i class="fa fa-pencil-alt"></i></button>
+                        <button class="btn-hapus-produk"><i class="fa fa-trash"></i></button>
+                    </div>
+                `;
+                produkGrid.appendChild(productCard);
+            });
+
+            // Tambahkan event listener untuk tombol hapus dan edit
+            attachActionListeners();
+
+        } catch (error) {
+            produkGrid.innerHTML = '<p style="color: red;">Gagal memuat produk. Terjadi kesalahan jaringan.</p>';
+            console.error('Error loading products:', error);
+        }
     }
-    // --- End of Data Persistence Logic ---
-    
-    // Tampilkan form tambah produk
-    const btnTambah = document.getElementById('btnTambah');
-    const formProduk = document.getElementById('formProduk');
-    const batalTambah = document.getElementById('batalTambah');
-    btnTambah.onclick = () => { formProduk.style.display = 'block'; btnTambah.style.display = 'none'; };
-    batalTambah.onclick = () => { formProduk.style.display = 'none'; btnTambah.style.display = 'inline-block'; };
 
-    // Muat produk ke dalam grid
-    const produkGrid = document.getElementById('produkGrid');
-    function loadProducts() {
-        produkGrid.innerHTML = '';
-        products.forEach(p => {
-            const item = document.createElement('div');
-            item.className = 'produk-item';
-            item.innerHTML = `
-                <a href="detail-produk.html?id=${p.id}" style="text-decoration: none; color: inherit;">
-                    <img src="${p.image}" alt="${p.name}">
-                    <div class="nama">${p.name}</div>
-                    <div class="harga">Rp ${p.price.toLocaleString('id-ID')}</div>
-                </a>
-            `;
-            produkGrid.appendChild(item);
+    function attachActionListeners() {
+        document.querySelectorAll('.btn-hapus-produk').forEach(button => {
+            button.addEventListener('click', async (e) => {
+                const produkId = e.currentTarget.closest('.aksi-produk').dataset.id;
+                if (!confirm(`Apakah Anda yakin ingin menghapus produk dengan ID ${produkId}?`)) {
+                    return;
+                }
+
+                try {
+                    const response = await fetch('hapus_produk.php', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ id: produkId })
+                    });
+                    const result = await response.json();
+                    alert(result.message);
+                    if (result.status === 'success') {
+                        loadProducts(); // Muat ulang produk
+                    }
+                } catch (error) {
+                    alert('Gagal menghubungi server.');
+                    console.error('Error deleting product:', error);
+                }
+            });
+        });
+
+        document.querySelectorAll('.btn-edit-produk').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const produkId = e.currentTarget.closest('.aksi-produk').dataset.id;
+                // Redirect ke halaman edit dengan membawa ID produk
+                window.location.href = `edit-produk.html?id=${produkId}`;
+            });
         });
     }
 
-    // Preview foto
-    const fotoInput = document.getElementById('fotoInput');
-    const previewFoto = document.getElementById('previewFoto');
-    fotoInput.onchange = function() {
-        if (this.files && this.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                previewFoto.innerHTML = `<img src='${e.target.result}' style='width:90px;height:90px;object-fit:contain;border-radius:8px;'>`;
-            };
-            reader.readAsDataURL(this.files[0]);
-        } else {
-            previewFoto.innerHTML = '';
-        }
-    };
+    document.getElementById('btnTambah').addEventListener('click', () => {
+        const formProduk = document.getElementById('formProduk');
+        formProduk.style.display = formProduk.style.display === 'none' ? 'block' : 'none';
+    });
 
-    // Tambah produk ke grid
-    const produkBaruForm = document.getElementById('produkBaruForm');
-    produkBaruForm.onsubmit = function(e) {
+    document.getElementById('produkBaruForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const data = new FormData(produkBaruForm);
-        let imgSrc = '';
-        if (fotoInput.files && fotoInput.files[0]) {
-            imgSrc = previewFoto.querySelector('img') ? previewFoto.querySelector('img').src : '';
-        }
-        const nama = data.get('nama');
-        const harga = parseInt(data.get('harga'));
-        const newProduct = {
-            id: products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1,
-            name: nama,
-            price: harga,
-            category: data.get('kategori'),
-            stock: data.get('stok'),
-            image: imgSrc || 'https://via.placeholder.com/90',
-            description: data.get('deskripsi')
-        };
-        products.push(newProduct);
-        localStorage.setItem('products', JSON.stringify(products)); // Save to localStorage
-        loadProducts(); // Muat ulang grid dengan produk baru
+        const form = e.target;
+        const submitButton = form.querySelector('button[type="submit"]');
+        const originalButtonText = submitButton.textContent;
+        
+        submitButton.disabled = true;
+        submitButton.textContent = 'Menyimpan...';
 
-        produkBaruForm.reset();
-        previewFoto.innerHTML = '';
-        formProduk.style.display = 'none';
-        btnTambah.style.display = 'inline-block';
-    };
+        const formData = new FormData(form);
+
+        try {
+            const response = await fetch('tambah_produk.php', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            alert(result.message); // Tampilkan pesan dari server
+
+            if (result.status === 'success') {
+                form.reset();
+                document.getElementById('previewFoto').innerHTML = '';
+                document.getElementById('formProduk').style.display = 'none';
+                loadProducts(); // Muat ulang daftar produk
+            }
+        } catch (error) {
+            alert('Gagal menghubungi server. Periksa konsol untuk detail.');
+            console.error('Error adding product:', error);
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = originalButtonText;
+        }
+    });
 
     // Panggil fungsi untuk memuat produk saat halaman pertama kali dibuka
     document.addEventListener('DOMContentLoaded', loadProducts);

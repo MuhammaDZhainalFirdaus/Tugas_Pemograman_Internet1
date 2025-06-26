@@ -59,6 +59,7 @@
         }
         .form-actions { margin-top: 24px; text-align: right; }
         .btn-simpan { background: #27ae60; color: #fff; border: none; border-radius: 6px; padding: 10px 24px; font-size: 1rem; cursor: pointer; }
+        .btn-batal { background: #e74c3c; color: #fff; border: none; border-radius: 6px; padding: 10px 24px; font-size: 1rem; cursor: pointer; margin-left: 10px; }
 
     </style>
 </head>
@@ -87,106 +88,111 @@
         </div>
         <div class="edit-content">
             <div class="edit-header">Edit Produk</div>
-            <form id="editForm" class="form-container">
+            <form id="editForm" class="form-container" enctype="multipart/form-data">
+                <input type="hidden" id="productId" name="id_produk">
                 <div class="form-body">
                     <div class="form-left">
                         <div class="form-group">
-                            <label for="kategori">Kategori</label>
-                            <select id="kategori" name="kategori">
-                                <option value="Manual Brew">Manual Brew</option>
-                                <option value="Grinder">Grinder</option>
-                                <option value="Aksesoris">Aksesoris</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
                             <label for="nama">Nama Produk</label>
-                            <input type="text" id="nama" name="nama" required>
+                            <input type="text" id="nama" name="nama_produk" required>
                         </div>
                         <div class="form-group">
                             <label for="harga">Harga</label>
                             <input type="number" id="harga" name="harga" required>
                         </div>
                         <div class="form-group">
-                            <label for="stok">Stok</label>
-                            <input type="number" id="stok" name="stok" required>
-                        </div>
-                        <div class="form-group">
                             <label for="deskripsi">Deskripsi</label>
-                            <textarea id="deskripsi" name="deskripsi" rows="4"></textarea>
+                            <textarea id="deskripsi" name="deskripsi" rows="6"></textarea>
                         </div>
                     </div>
                     <div class="form-right">
                         <div class="form-group photo-upload">
-                            <label>Foto</label>
-                            <div id="current-photo" class="current-photo"></div>
-                            <div class="photo-actions">
-                                <button type="button" class="ganti">Ganti</button>
-                                <button type="button">Hapus</button>
+                            <label>Foto Saat Ini</label>
+                            <div id="current-photo" class="current-photo">
+                                <!-- Gambar saat ini akan dimuat di sini -->
                             </div>
-                            <input type="file" id="foto" name="foto" style="display:none;">
+                            <label for="foto" style="margin-top:10px;">Ganti Foto (Opsional)</label>
+                            <input type="file" id="foto" name="foto_baru">
                         </div>
                     </div>
                 </div>
                 <div class="form-actions">
-                    <button type="submit" class="btn-simpan">Simpan</button>
+                    <button type="submit" class="btn-simpan">Simpan Perubahan</button>
+                    <a href="produk.html" class="btn-batal">Batal</a>
                 </div>
             </form>
         </div>
     </div>
-    <script src="data.js"></script>
     <script>
-        // --- Data Persistence Logic ---
-        let products;
-        const savedProducts = localStorage.getItem('products');
+    document.addEventListener('DOMContentLoaded', async () => {
+        const params = new URLSearchParams(window.location.search);
+        const productId = params.get('id');
+        const form = document.getElementById('editForm');
+        const contentDiv = document.querySelector('.edit-content');
 
-        if (savedProducts) {
-            products = JSON.parse(savedProducts);
-        } else {
-            // Use the initial products from data.js and save to localStorage
-            products = initialProducts; 
-            localStorage.setItem('products', JSON.stringify(products));
+        if (!productId) {
+            contentDiv.innerHTML = '<h2>ID Produk tidak valid.</h2>';
+            return;
         }
-        // --- End of Data Persistence Logic ---
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const params = new URLSearchParams(window.location.search);
-            const productId = parseInt(params.get('id'));
-            const product = products.find(p => p.id === productId);
+        try {
+            const response = await fetch(`get_produk_detail.php?id=${productId}`);
+            const result = await response.json();
 
-            if (product) {
-                document.getElementById('kategori').value = product.category;
-                document.getElementById('nama').value = product.name;
-                document.getElementById('harga').value = product.price;
-                document.getElementById('stok').value = product.stock;
-                document.getElementById('deskripsi').value = product.description;
-                document.getElementById('current-photo').innerHTML = `<img src="${product.image}" alt="Foto Produk">`;
-            } else {
-                document.querySelector('.edit-content').innerHTML = '<h2>Produk tidak ditemukan.</h2>';
-            }
-        });
-
-        document.getElementById('editForm').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const params = new URLSearchParams(window.location.search);
-            const productId = parseInt(params.get('id'));
-            const productIndex = products.findIndex(p => p.id === productId);
-
-            if (productIndex !== -1) {
-                products[productIndex].category = document.getElementById('kategori').value;
-                products[productIndex].name = document.getElementById('nama').value;
-                products[productIndex].price = parseInt(document.getElementById('harga').value);
-                products[productIndex].stock = parseInt(document.getElementById('stok').value);
-                products[productIndex].description = document.getElementById('deskripsi').value;
+            if (result.status === 'success') {
+                const product = result.data;
+                document.getElementById('productId').value = product.id;
+                document.getElementById('nama').value = product.nama_produk;
+                document.getElementById('harga').value = product.harga;
+                document.getElementById('deskripsi').value = product.deskripsi;
                 
-                // Save updated array to localStorage
-                localStorage.setItem('products', JSON.stringify(products));
-
-                alert('Produk berhasil diperbarui!');
-                window.location.href = `detail-produk.html?id=${productId}`;
+                const photoDiv = document.getElementById('current-photo');
+                if (product.gambar) {
+                    photoDiv.innerHTML = `<img src="uploads/${product.gambar}" alt="Foto Produk" style="max-width: 200px; border-radius: 8px;">`;
+                } else {
+                    photoDiv.innerHTML = '<span>Tidak ada gambar.</span>';
+                }
             } else {
-                alert('Gagal memperbarui. Produk tidak ditemukan.');
+                contentDiv.innerHTML = `<h2>Error: ${result.message}</h2>`;
             }
-        });
+        } catch (error) {
+            contentDiv.innerHTML = '<h2>Gagal memuat data produk.</h2>';
+            console.error('Fetch error:', error);
+        }
+    });
+
+    // Logika untuk submit form
+    document.getElementById('editForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const form = e.target;
+        const formData = new FormData(form);
+        const submitButton = form.querySelector('.btn-simpan');
+        
+        submitButton.disabled = true;
+        submitButton.textContent = 'Menyimpan...';
+
+        try {
+            const response = await fetch('update_produk.php', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            alert(result.message);
+
+            if (result.status === 'success') {
+                // Kembali ke halaman daftar produk setelah berhasil
+                window.location.href = 'produk.html';
+            }
+        } catch (error) {
+            alert('Gagal menghubungi server.');
+            console.error('Error updating product:', error);
+        } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = 'Simpan Perubahan';
+        }
+    });
     </script>
 </body>
 </html> 

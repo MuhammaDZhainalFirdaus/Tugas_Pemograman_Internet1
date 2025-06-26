@@ -154,6 +154,31 @@
             font-weight: bold;
             color: #263159;
         }
+        .produk-section { margin-top: 32px; }
+        .produk-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 24px;
+        }
+        .produk-item {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(38,49,89,0.07);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        .produk-item img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+        .produk-info { padding: 16px; flex-grow: 1; display: flex; flex-direction: column; }
+        .produk-info .nama { font-size: 1.1rem; font-weight: 600; color: #263159; margin-bottom: 8px; }
+        .produk-info .deskripsi { font-size: 0.95rem; color: #555; margin-bottom: 12px; flex-grow: 1; }
+        .produk-footer { display: flex; justify-content: space-between; align-items: center; padding: 0 16px 16px 16px; }
+        .produk-footer .harga { font-size: 1.2rem; font-weight: bold; color: #e74c3c; }
+        .produk-footer .btn-beli { background: #435585; color: #fff; border: none; border-radius: 6px; padding: 8px 16px; cursor: pointer; }
         @media (max-width: 900px) {
             .summary-cards {
                 flex-direction: column;
@@ -231,24 +256,79 @@
                     </div>
                 </div>
             </div>
+            <div class="produk-section">
+                <div class="dashboard-title">Produk Tersedia</div>
+                <div class="produk-grid" id="produkGrid">
+                    <!-- Produk dari database akan dimuat di sini -->
+                </div>
+            </div>
         </div>
     </div>
     <script>
-    // Ambil nama user dari localStorage
-    const loggedInUser = JSON.parse(localStorage.getItem('loggedInUser'));
-    if (loggedInUser) {
-        document.getElementById('sidebarName').textContent = loggedInUser.nama || loggedInUser.username;
-        document.getElementById('topbarName').textContent = loggedInUser.nama || loggedInUser.username;
+    async function loadProducts() {
+        const produkGrid = document.getElementById('produkGrid');
+        produkGrid.innerHTML = '<p>Memuat produk...</p>';
+
+        try {
+            const response = await fetch('get_produk.php');
+            const products = await response.json();
+
+            if (products.status === 'error') {
+                produkGrid.innerHTML = `<p style="color: red;">Error: ${products.message}</p>`;
+                return;
+            }
+            if (products.length === 0) {
+                produkGrid.innerHTML = '<p>Saat ini belum ada produk yang tersedia.</p>';
+                return;
+            }
+
+            produkGrid.innerHTML = ''; // Kosongkan grid
+            products.forEach(product => {
+                const productCard = document.createElement('div');
+                productCard.className = 'produk-item';
+                const imageUrl = product.gambar ? `uploads/${product.gambar}` : 'https://via.placeholder.com/250x180';
+
+                productCard.innerHTML = `
+                    <img src="${imageUrl}" alt="${product.nama_produk}">
+                    <div class="produk-info">
+                        <div class="nama">${product.nama_produk}</div>
+                        <div class="deskripsi">${product.deskripsi.substring(0, 80)}...</div>
+                    </div>
+                    <div class="produk-footer">
+                        <span class="harga">Rp ${product.harga.toLocaleString('id-ID')}</span>
+                        <button class="btn-beli" data-id="${product.id}">Beli</button>
+                    </div>
+                `;
+                produkGrid.appendChild(productCard);
+            });
+        } catch (error) {
+            produkGrid.innerHTML = '<p style="color: red;">Gagal memuat produk.</p>';
+            console.error('Error loading products:', error);
+        }
     }
-    // Notifikasi sukses register (opsional, bisa dihapus setelah reload)
-    if (localStorage.getItem('registerSuccess')) {
-        document.getElementById('notifSuccess').style.display = '';
-        localStorage.removeItem('registerSuccess');
+    
+    // Fungsi untuk mengambil data sesi (nama user, dll) jika diperlukan
+    async function loadUserData() {
+        // Karena kita tidak menyimpan info user di localStorage lagi,
+        // kita bisa membuat endpoint PHP (misal: get_user_session.php)
+        // untuk mengambil data user yang login. Untuk saat ini, kita biarkan default.
+        // const response = await fetch('get_user_session.php');
+        // const userData = await response.json();
+        // if(userData.status === 'success') {
+        //     document.getElementById('sidebarName').textContent = userData.nama;
+        //     document.getElementById('topbarName').textContent = userData.nama;
+        // }
     }
-    // Logout
+
     document.getElementById('logoutBtn').onclick = function() {
-        localStorage.removeItem('loggedInUser');
+        // Nanti kita akan buat logout.php untuk menghancurkan sesi di server
+        window.location.href = 'login.html';
     };
+
+    document.addEventListener('DOMContentLoaded', () => {
+        loadUserData();
+        loadProducts();
+    });
     </script>
 </body>
 </html> 
