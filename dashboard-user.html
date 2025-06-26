@@ -301,10 +301,48 @@
                 `;
                 produkGrid.appendChild(productCard);
             });
+
+            // Tambahkan event listener untuk semua tombol Beli
+            attachBuyButtonListeners();
+
         } catch (error) {
             produkGrid.innerHTML = '<p style="color: red;">Gagal memuat produk.</p>';
             console.error('Error loading products:', error);
         }
+    }
+
+    function attachBuyButtonListeners() {
+        document.querySelectorAll('.btn-beli').forEach(button => {
+            button.addEventListener('click', async function(e) {
+                const productId = this.dataset.id;
+                this.disabled = true;
+                this.textContent = 'Memproses...';
+
+                try {
+                    const response = await fetch('buat_pesanan.php', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ id_produk: productId })
+                    });
+
+                    const result = await response.json();
+
+                    if (result.status === 'success') {
+                        // Jika berhasil, arahkan ke halaman pembayaran dengan ID pesanan
+                        alert(result.message);
+                        window.location.href = `pembayaran-user.html?order_id=${result.order_id}`;
+                    } else {
+                        alert('Error: ' + result.message);
+                        this.disabled = false;
+                        this.textContent = 'Beli';
+                    }
+                } catch (error) {
+                    alert('Gagal menghubungi server.');
+                    this.disabled = false;
+                    this.textContent = 'Beli';
+                }
+            });
+        });
     }
     
     // Fungsi untuk mengambil data sesi (nama user, dll) jika diperlukan
