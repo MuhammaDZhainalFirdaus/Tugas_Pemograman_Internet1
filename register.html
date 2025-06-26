@@ -193,6 +193,13 @@
                     <input type="password" id="confirm_password" name="confirm_password" placeholder="Konfirmasi Password" required>
                 </div>
             </div>
+            <div class="input-group">
+                <label for="role">DAFTAR SEBAGAI</label>
+                <select id="role" name="role" required style="width:100%;padding:10px;border-radius:6px;border:1.5px solid #d1d5db;font-size:1rem;">
+                    <option value="user">User</option>
+                    <option value="admin">Admin</option>
+                </select>
+            </div>
             <button type="submit">REGISTER</button>
         </form>
         <div class="login-link">
@@ -202,6 +209,28 @@
     <script>
     document.getElementById('registerForm').addEventListener('submit', function(e) {
         e.preventDefault();
+        const nama = document.getElementById('nama').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirm_password').value;
+        const role = document.getElementById('role').value;
+
+        if (password !== confirmPassword) {
+            alert('Konfirmasi password tidak cocok!');
+            return;
+        }
+        let users = JSON.parse(localStorage.getItem('users')) || [];
+        if (users.some(u => u.username === username)) {
+            alert('Username sudah terdaftar!');
+            return;
+        }
+        if (users.some(u => u.email === email)) {
+            alert('Email sudah terdaftar!');
+            return;
+        }
+        users.push({ nama, email, username, password, role });
+        localStorage.setItem('users', JSON.stringify(users));
         alert('Registrasi berhasil! Silakan login.');
         window.location.href = 'login.html';
     });

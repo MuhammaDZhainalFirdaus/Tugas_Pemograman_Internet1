@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Pelanggan - Toko Alat Kopi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #e6ecf5;
+        }
+        .sidebar {
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            width: 220px;
+            background: #263159;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+        .sidebar .logo {
+            font-size: 1.6rem;
+            font-weight: bold;
+            padding: 28px 0 18px 0;
+            text-align: center;
+            letter-spacing: 1px;
+            background: #1b2242;
+        }
+        .sidebar nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 18px;
+        }
+        .sidebar nav a {
+            color: #fff;
+            text-decoration: none;
+            padding: 12px 32px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 1.05rem;
+            border-left: 4px solid transparent;
+            transition: all 0.2s ease-in-out;
+        }
+        .sidebar nav a.active {
+            background: #435585;
+            border-left: 4px solid #f7c873;
+        }
+        .sidebar nav a:hover {
+            background: #435585;
+            border-left: 4px solid #f7c873;
+            transform: translateX(8px);
+        }
+        .sidebar .bottom {
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        .sidebar .bottom a {
+            color: #fff;
+            font-size: 1.1rem;
+            text-decoration: none;
+            padding: 8px 0;
+            display: block;
+        }
+        .main {
+            margin-left: 220px;
+            min-height: 100vh;
+            background: #e6ecf5;
+        }
+        .topbar {
+            background: #435585;
+            color: #fff;
+            padding: 18px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .topbar .search {
+            background: #fff;
+            border-radius: 24px;
+            padding: 6px 18px;
+            display: flex;
+            align-items: center;
+            width: 320px;
+        }
+        .topbar .search input {
+            border: none;
+            outline: none;
+            font-size: 1rem;
+            background: transparent;
+            margin-left: 8px;
+            width: 100%;
+        }
+        .topbar .user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .topbar .user .fa-user-circle {
+            font-size: 1.7rem;
+        }
+        .topbar .user .name {
+            font-weight: 500;
+            font-size: 1.08rem;
+        }
+        .review-content {
+            padding: 32px 32px 0 32px;
+        }
+        .review-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: #263159;
+        }
+        .review-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+        .review-header .review-title {
+            margin: 0;
+        }
+        .review-header .btn-tambah {
+            background: #435585;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 18px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .review-header .btn-tambah:hover {
+            background: #263159;
+        }
+        .review-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 24px;
+        }
+        .review-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(38,49,89,0.07);
+            overflow: hidden;
+        }
+        .review-header-card {
+            background: #f7f9fc;
+            padding: 16px 20px;
+            border-bottom: 1px solid #e6ecf5;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .reviewer-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .reviewer-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #435585;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+        .reviewer-details h4 {
+            margin: 0;
+            color: #263159;
+            font-size: 1rem;
+        }
+        .reviewer-details .date {
+            color: #888;
+            font-size: 0.9rem;
+        }
+        .rating {
+            display: flex;
+            gap: 2px;
+        }
+        .star {
+            color: #f1c40f;
+            font-size: 1.1rem;
+        }
+        .star.empty {
+            color: #ddd;
+        }
+        .review-body {
+            padding: 20px;
+        }
+        .review-text {
+            color: #555;
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+        .product-info {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 6px;
+            margin-bottom: 16px;
+        }
+        .product-info .label {
+            font-weight: 600;
+            color: #263159;
+            margin-bottom: 4px;
+        }
+        .product-info .product-name {
+            color: #435585;
+        }
+        .reply-section {
+            border-top: 1px solid #e6ecf5;
+            padding-top: 16px;
+        }
+        .reply-form {
+            display: none;
+            margin-top: 12px;
+        }
+        .reply-form textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+        }
+        .reply-actions {
+            margin-top: 8px;
+            display: flex;
+            gap: 8px;
+        }
+        .btn-reply, .btn-save-reply, .btn-cancel {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .btn-reply {
+            background: #3498db;
+            color: #fff;
+        }
+        .btn-save-reply {
+            background: #27ae60;
+            color: #fff;
+        }
+        .btn-cancel {
+            background: #ecf0f1;
+            color: #333;
+        }
+        .admin-reply {
+            background: #e8f4fd;
+            padding: 12px;
+            border-radius: 6px;
+            margin-top: 12px;
+            border-left: 4px solid #3498db;
+        }
+        .admin-reply .label {
+            font-weight: 600;
+            color: #2980b9;
+            margin-bottom: 4px;
+        }
+        .admin-reply .text {
+            color: #555;
+        }
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .status-replied {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        @media (max-width: 900px) {
+            .main {
+                margin-left: 0;
+            }
+            .sidebar {
+                position: static;
+                width: 100%;
+                flex-direction: row;
+                height: auto;
+            }
+            .review-content {
+                padding: 18px 6px 0 6px;
+            }
+            .review-cards {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo"><i class="fa fa-coffee"></i> Toko Kopi</div>
+        <nav>
+            <a href="dashboard.html"><i class="fa fa-tachometer-alt"></i> Dashboard</a>
+            <a href="kategori.html"><i class="fa fa-list-ul"></i> Kategori Produk</a>
+            <a href="produk.html"><i class="fa fa-shopping-bag"></i> Produk</a>
+            <a href="pesanan.html"><i class="fa fa-receipt"></i> Pesanan</a>
+            <a href="#kupon"><i class="fa fa-ticket-alt"></i> Kupon</a>
+            <a href="pembayaran.html"><i class="fa fa-money-check-alt"></i> Pembayaran</a>
+            <a href="pelanggan.html"><i class="fa fa-users"></i> Pelanggan</a>
+            <a href="review.html" class="active"><i class="fa fa-edit"></i> Review Pelanggan</a>
+            <a href="#kontak"><i class="fa fa-phone"></i> Kontak</a>
+        </nav>
+        <div class="bottom">
+            <a href="login.html"><i class="fa fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </div>
+    <div class="main">
+        <div class="topbar">
+            <div class="search">
+                <i class="fa fa-search" style="color:#888"></i>
+                <input type="text" placeholder="Cari review...">
+            </div>
+            <div class="user">
+                <i class="fa fa-user-circle"></i>
+                <span class="name">Admin</span>
+            </div>
+        </div>
+        <div class="review-content">
+            <div class="review-header">
+                <div class="review-title">Review Pelanggan</div>
+                <button class="btn-tambah" id="btnTambahReview">
+                    <i class="fa fa-plus"></i> Tambah Review
+                </button>
+            </div>
+
+            <div class="review-cards" id="reviewCards">
+                <!-- Review cards akan dimuat di sini -->
+            </div>
+        </div>
+    </div>
+    <script src="data.js"></script>
+    <script>
+        // --- Data Persistence Logic for Reviews ---
+        let reviews;
+        const savedReviews = localStorage.getItem('reviews');
+        if (savedReviews) {
+            reviews = JSON.parse(savedReviews);
+        } else {
+            // Initialize with sample review data
+            reviews = [
+                {
+                    id: 1,
+                    customerName: 'Andi',
+                    productName: 'Syphon Coffee Maker',
+                    rating: 5,
+                    review: 'Produk sangat bagus! Kualitas kopi yang dihasilkan sangat bersih dan jernih. Sangat puas dengan pembelian ini.',
+                    date: '2024-05-01',
+                    adminReply: 'Terima kasih atas review positifnya! Kami senang Anda puas dengan produk kami.',
+                    status: 'replied'
+                },
+                {
+                    id: 2,
+                    customerName: 'Budi',
+                    productName: 'Electric Coffee Grinder',
+                    rating: 4,
+                    review: 'Grinder ini sangat presisi dan konsisten. Hanya sedikit berisik, tapi overall sangat bagus untuk kebutuhan brewing.',
+                    date: '2024-05-02',
+                    adminReply: '',
+                    status: 'pending'
+                },
+                {
+                    id: 3,
+                    customerName: 'Citra',
+                    productName: 'Vietnam Drip',
+                    rating: 3,
+                    review: 'Produk sesuai deskripsi, tapi pengiriman agak lama. Mungkin bisa diperbaiki untuk kedepannya.',
+                    date: '2024-05-03',
+                    adminReply: 'Mohon maaf atas keterlambatan pengiriman. Kami akan terus berusaha memperbaiki layanan kami.',
+                    status: 'replied'
+                }
+            ];
+            localStorage.setItem('reviews', JSON.stringify(reviews));
+        }
+        // --- End of Data Persistence Logic ---
+
+        function renderStars(rating) {
+            let stars = '';
+            for (let i = 1; i <= 5; i++) {
+                stars += `<i class="fa fa-star star ${i <= rating ? '' : 'empty'}"></i>`;
+            }
+            return stars;
+        }
+
+        function getStatusBadge(status) {
+            if (status === 'replied') {
+                return '<span class="status-badge status-replied">Sudah Dibalas</span>';
+            } else {
+                return '<span class="status-badge status-pending">Belum Dibalas</span>';
+            }
+        }
+
+        function loadReviews() {
+            const reviewCards = document.getElementById('reviewCards');
+            reviewCards.innerHTML = '';
+
+            reviews.forEach(review => {
+                const card = document.createElement('div');
+                card.className = 'review-card';
+                card.innerHTML = `
+                    <div class="review-header-card">
+                        <div class="reviewer-info">
+                            <div class="reviewer-avatar">
+                                ${review.customerName.charAt(0).toUpperCase()}
+                            </div>
+                            <div class="reviewer-details">
+                                <h4>${review.customerName}</h4>
+                                <div class="date">${review.date}</div>
+                            </div>
+                        </div>
+                        <div class="rating">
+                            ${renderStars(review.rating)}
+                        </div>
+                    </div>
+                    <div class="review-body">
+                        <div class="product-info">
+                            <div class="label">Produk:</div>
+                            <div class="product-name">${review.productName}</div>
+                        </div>
+                        <div class="review-text">${review.review}</div>
+                        <div class="reply-section">
+                            ${getStatusBadge(review.status)}
+                            ${review.adminReply ? `
+                                <div class="admin-reply">
+                                    <div class="label">Balasan Admin:</div>
+                                    <div class="text">${review.adminReply}</div>
+                                </div>
+                            ` : ''}
+                            <div class="reply-actions">
+                                ${!review.adminReply ? `
+                                    <button class="btn-reply" data-id="${review.id}">Balas Review</button>
+                                ` : `
+                                    <button class="btn-reply" data-id="${review.id}">Edit Balasan</button>
+                                `}
+                            </div>
+                            <div class="reply-form" id="replyForm${review.id}">
+                                <textarea placeholder="Tulis balasan Anda..." id="replyText${review.id}">${review.adminReply || ''}</textarea>
+                                <div class="reply-actions">
+                                    <button class="btn-save-reply" data-id="${review.id}">Simpan Balasan</button>
+                                    <button class="btn-cancel" data-id="${review.id}">Batal</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                reviewCards.appendChild(card);
+            });
+        }
+
+        function showReplyForm(reviewId) {
+            const replyForm = document.getElementById(`replyForm${reviewId}`);
+            const replyText = document.getElementById(`replyText${reviewId}`);
+            replyForm.style.display = 'block';
+            replyText.focus();
+        }
+
+        function hideReplyForm(reviewId) {
+            const replyForm = document.getElementById(`replyForm${reviewId}`);
+            replyForm.style.display = 'none';
+        }
+
+        function saveReply(reviewId) {
+            const replyText = document.getElementById(`replyText${reviewId}`).value.trim();
+            if (!replyText) {
+                alert('Balasan tidak boleh kosong!');
+                return;
+            }
+
+            const reviewIndex = reviews.findIndex(r => r.id === reviewId);
+            if (reviewIndex !== -1) {
+                reviews[reviewIndex].adminReply = replyText;
+                reviews[reviewIndex].status = 'replied';
+                localStorage.setItem('reviews', JSON.stringify(reviews));
+                loadReviews();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadReviews);
+
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('btn-reply')) {
+                const reviewId = parseInt(e.target.dataset.id);
+                showReplyForm(reviewId);
+            }
+
+            if (e.target.classList.contains('btn-save-reply')) {
+                const reviewId = parseInt(e.target.dataset.id);
+                saveReply(reviewId);
+            }
+
+            if (e.target.classList.contains('btn-cancel')) {
+                const reviewId = parseInt(e.target.dataset.id);
+                hideReplyForm(reviewId);
+            }
+        });
+
+        // Search functionality
+        const searchInput = document.querySelector('.topbar .search input');
+        searchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            const cards = document.querySelectorAll('.review-card');
+            
+            cards.forEach(card => {
+                const customerName = card.querySelector('.reviewer-details h4').textContent.toLowerCase();
+                const productName = card.querySelector('.product-name').textContent.toLowerCase();
+                const reviewText = card.querySelector('.review-text').textContent.toLowerCase();
+                
+                if (customerName.includes(searchTerm) || 
+                    productName.includes(searchTerm) || 
+                    reviewText.includes(searchTerm)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        });
+    </script>
+</body>
+</html> 
