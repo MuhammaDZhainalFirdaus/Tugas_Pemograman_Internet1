@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pelanggan - Toko Alat Kopi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #e6ecf5;
+        }
+        .sidebar {
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            width: 220px;
+            background: #263159;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+        .sidebar .logo {
+            font-size: 1.6rem;
+            font-weight: bold;
+            padding: 28px 0 18px 0;
+            text-align: center;
+            letter-spacing: 1px;
+            background: #1b2242;
+        }
+        .sidebar nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 18px;
+        }
+        .sidebar nav a {
+            color: #fff;
+            text-decoration: none;
+            padding: 12px 32px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 1.05rem;
+            border-left: 4px solid transparent;
+            transition: all 0.2s ease-in-out;
+        }
+        .sidebar nav a.active {
+            background: #435585;
+            border-left: 4px solid #f7c873;
+        }
+        .sidebar nav a:hover {
+            background: #435585;
+            border-left: 4px solid #f7c873;
+            transform: translateX(8px);
+        }
+        .sidebar .bottom {
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        .sidebar .bottom a {
+            color: #fff;
+            font-size: 1.1rem;
+            text-decoration: none;
+            padding: 8px 0;
+            display: block;
+        }
+        .main {
+            margin-left: 220px;
+            min-height: 100vh;
+            background: #e6ecf5;
+        }
+        .topbar {
+            background: #435585;
+            color: #fff;
+            padding: 18px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .topbar .search {
+            background: #fff;
+            border-radius: 24px;
+            padding: 6px 18px;
+            display: flex;
+            align-items: center;
+            width: 320px;
+        }
+        .topbar .search input {
+            border: none;
+            outline: none;
+            font-size: 1rem;
+            background: transparent;
+            margin-left: 8px;
+            width: 100%;
+        }
+        .topbar .user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .topbar .user .fa-user-circle {
+            font-size: 1.7rem;
+        }
+        .topbar .user .name {
+            font-weight: 500;
+            font-size: 1.08rem;
+        }
+        .pelanggan-content {
+            padding: 32px 32px 0 32px;
+        }
+        .pelanggan-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: #263159;
+        }
+        .pelanggan-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+        .pelanggan-header .pelanggan-title {
+            margin: 0;
+        }
+        .pelanggan-header .btn-tambah {
+            background: #435585;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 18px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .pelanggan-header .btn-tambah:hover {
+            background: #263159;
+        }
+        .pelanggan-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(38,49,89,0.07);
+            overflow: hidden;
+        }
+        .pelanggan-table th, .pelanggan-table td {
+            padding: 12px 10px;
+            text-align: left;
+        }
+        .pelanggan-table th {
+            background: #435585;
+            color: #fff;
+            font-weight: 500;
+        }
+        .pelanggan-table tr:not(:last-child) {
+            border-bottom: 1px solid #e6ecf5;
+        }
+        .pelanggan-table td.aksi a {
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin-right: 6px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-detail { background: #3498db; }
+        .btn-edit { background: #f1c40f; }
+        .btn-delete { background: #e74c3c; }
+
+        /* Form Tambah/Edit Customer */
+        #formCustomer {
+            background: #fff;
+            padding: 24px;
+            margin-bottom: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(38,49,89,0.07);
+            display: none;
+        }
+        #formCustomer h3 { margin-top: 0; color: #263159; }
+        #formCustomer .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        #formCustomer .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #555;
+        }
+        #formCustomer .form-group input,
+        #formCustomer .form-group select {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1.2px solid #d1d5db;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        #formCustomer .form-actions {
+            grid-column: 1 / -1;
+            text-align: right;
+            margin-top: 16px;
+        }
+        #formCustomer .form-actions button {
+            border: none;
+            border-radius: 6px;
+            padding: 8px 18px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+        #formCustomer .btn-simpan { background: #27ae60; color: #fff; }
+        #formCustomer .btn-batal { background: #ecf0f1; color: #333; }
+
+        @media (max-width: 900px) {
+            .main {
+                margin-left: 0;
+            }
+            .sidebar {
+                position: static;
+                width: 100%;
+                flex-direction: row;
+                height: auto;
+            }
+            .pelanggan-content {
+                padding: 18px 6px 0 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo"><i class="fa fa-coffee"></i> Toko Kopi</div>
+        <nav>
+            <a href="dashboard.html"><i class="fa fa-tachometer-alt"></i> Dashboard</a>
+            <a href="kategori.html"><i class="fa fa-list-ul"></i> Kategori Produk</a>
+            <a href="produk.html"><i class="fa fa-shopping-bag"></i> Produk</a>
+            <a href="pesanan.html"><i class="fa fa-receipt"></i> Pesanan</a>
+            <a href="#kupon"><i class="fa fa-ticket-alt"></i> Kupon</a>
+            <a href="pembayaran.html"><i class="fa fa-money-check-alt"></i> Pembayaran</a>
+            <a href="pelanggan.html" class="active"><i class="fa fa-users"></i> Pelanggan</a>
+            <a href="#review"><i class="fa fa-edit"></i> Review Pelanggan</a>
+            <a href="#kontak"><i class="fa fa-phone"></i> Kontak</a>
+        </nav>
+        <div class="bottom">
+            <a href="login.html"><i class="fa fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </div>
+    <div class="main">
+        <div class="topbar">
+            <div class="search">
+                <i class="fa fa-search" style="color:#888"></i>
+                <input type="text" placeholder="Cari pelanggan...">
+            </div>
+            <div class="user">
+                <i class="fa fa-user-circle"></i>
+                <span class="name">Admin</span>
+            </div>
+        </div>
+        <div class="pelanggan-content">
+            <div class="pelanggan-header">
+                <div class="pelanggan-title">Daftar Pelanggan</div>
+                <button class="btn-tambah" id="btnTambahCustomer">
+                    <i class="fa fa-plus"></i> Tambah Pelanggan
+                </button>
+            </div>
+
+            <form id="formCustomer">
+                <h3 id="formTitle">Tambah Pelanggan Baru</h3>
+                <input type="hidden" id="editCustomerId">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="customerName">Nama Pelanggan</label>
+                        <input type="text" id="customerName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerEmail">Email</label>
+                        <input type="email" id="customerEmail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerPhone">No. Telepon</label>
+                        <input type="tel" id="customerPhone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerAddress">Alamat</label>
+                        <input type="text" id="customerAddress" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerJoinDate">Tanggal Bergabung</label>
+                        <input type="date" id="customerJoinDate" required>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-batal">Batal</button>
+                    <button type="submit" class="btn-simpan">Simpan</button>
+                </div>
+            </form>
+
+            <table class="pelanggan-table">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Nama</th>
+                        <th>Email</th>
+                        <th>No. Telepon</th>
+                        <th>Alamat</th>
+                        <th>Tanggal Bergabung</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="customersTableBody">
+                    <!-- Data pelanggan akan dimuat di sini -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script src="data.js"></script>
+    <script>
+        // --- Data Persistence Logic for Customers ---
+        let customers;
+        const savedCustomers = localStorage.getItem('customers');
+        if (savedCustomers) {
+            customers = JSON.parse(savedCustomers);
+        } else {
+            customers = initialCustomers;
+            localStorage.setItem('customers', JSON.stringify(customers));
+        }
+        // --- End of Data Persistence Logic ---
+
+        const tableBody = document.getElementById('customersTableBody');
+        const formCustomer = document.getElementById('formCustomer');
+        const btnTambah = document.getElementById('btnTambahCustomer');
+        const formTitle = document.getElementById('formTitle');
+        const customerIdInput = document.getElementById('editCustomerId');
+        const customerNameInput = document.getElementById('customerName');
+        const customerEmailInput = document.getElementById('customerEmail');
+        const customerPhoneInput = document.getElementById('customerPhone');
+        const customerAddressInput = document.getElementById('customerAddress');
+        const customerJoinDateInput = document.getElementById('customerJoinDate');
+
+        function loadCustomers() {
+            tableBody.innerHTML = '';
+            customers.forEach((customer, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${customer.name}</td>
+                    <td>${customer.email}</td>
+                    <td>${customer.phone || '-'}</td>
+                    <td>${customer.address || '-'}</td>
+                    <td>${customer.joinDate}</td>
+                    <td class="aksi">
+                        <a href="#" class="btn-detail" data-id="${customer.id}"><i class="fa fa-eye"></i></a>
+                        <a href="#" class="btn-edit" data-id="${customer.id}"><i class="fa fa-pencil-alt"></i></a>
+                        <a href="#" class="btn-delete" data-id="${customer.id}"><i class="fa fa-trash"></i></a>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function showAddForm() {
+            formTitle.textContent = 'Tambah Pelanggan Baru';
+            formCustomer.reset();
+            customerIdInput.value = '';
+            formCustomer.style.display = 'block';
+        }
+
+        function showEditForm(customer) {
+            formTitle.textContent = 'Edit Pelanggan';
+            customerIdInput.value = customer.id;
+            customerNameInput.value = customer.name;
+            customerEmailInput.value = customer.email;
+            customerPhoneInput.value = customer.phone || '';
+            customerAddressInput.value = customer.address || '';
+            customerJoinDateInput.value = customer.joinDate;
+            formCustomer.style.display = 'block';
+        }
+
+        function hideForm() {
+            formCustomer.style.display = 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', loadCustomers);
+
+        btnTambah.addEventListener('click', showAddForm);
+
+        tableBody.addEventListener('click', (e) => {
+            const link = e.target.closest('a');
+            if (!link) return;
+
+            const id = parseInt(link.dataset.id);
+            if (link.classList.contains('btn-edit')) {
+                e.preventDefault();
+                const customer = customers.find(c => c.id === id);
+                if (customer) showEditForm(customer);
+            }
+
+            if (link.classList.contains('btn-delete')) {
+                e.preventDefault();
+                if (confirm(`Yakin ingin menghapus pelanggan ${customers.find(c => c.id === id)?.name}?`)) {
+                    customers = customers.filter(c => c.id !== id);
+                    localStorage.setItem('customers', JSON.stringify(customers));
+                    loadCustomers();
+                }
+            }
+
+            if (link.classList.contains('btn-detail')) {
+                e.preventDefault();
+                const customer = customers.find(c => c.id === id);
+                if (customer) {
+                    alert(`Detail Pelanggan:\nNama: ${customer.name}\nEmail: ${customer.email}\nTelepon: ${customer.phone || '-'}\nAlamat: ${customer.address || '-'}\nTanggal Bergabung: ${customer.joinDate}`);
+                }
+            }
+        });
+
+        formCustomer.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const customerData = {
+                name: customerNameInput.value,
+                email: customerEmailInput.value,
+                phone: customerPhoneInput.value,
+                address: customerAddressInput.value,
+                joinDate: customerJoinDateInput.value
+            };
+
+            if (customerIdInput.value) {
+                // Edit existing customer
+                const id = parseInt(customerIdInput.value);
+                const customerIndex = customers.findIndex(c => c.id === id);
+                if (customerIndex !== -1) {
+                    customers[customerIndex] = { ...customers[customerIndex], ...customerData };
+                }
+            } else {
+                // Add new customer
+                const newId = Math.max(...customers.map(c => c.id), 0) + 1;
+                customers.push({
+                    id: newId,
+                    ...customerData
+                });
+            }
+
+            localStorage.setItem('customers', JSON.stringify(customers));
+            loadCustomers();
+            hideForm();
+        });
+
+        formCustomer.querySelector('.btn-batal').addEventListener('click', hideForm);
+    </script>
+</body>
+</html> 

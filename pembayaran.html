@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembayaran - Toko Alat Kopi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #e6ecf5;
+        }
+        .sidebar {
+            position: fixed;
+            left: 0; top: 0; bottom: 0;
+            width: 220px;
+            background: #263159;
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            z-index: 10;
+        }
+        .sidebar .logo {
+            font-size: 1.6rem;
+            font-weight: bold;
+            padding: 28px 0 18px 0;
+            text-align: center;
+            letter-spacing: 1px;
+            background: #1b2242;
+        }
+        .sidebar nav {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-top: 18px;
+        }
+        .sidebar nav a {
+            color: #fff;
+            text-decoration: none;
+            padding: 12px 32px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 1.05rem;
+            border-left: 4px solid transparent;
+            transition: all 0.2s ease-in-out;
+        }
+        .sidebar nav a.active {
+            background: #435585;
+            border-left: 4px solid #f7c873;
+        }
+        .sidebar nav a:hover {
+            background: #435585;
+            border-left: 4px solid #f7c873;
+            transform: translateX(8px);
+        }
+        .sidebar .bottom {
+            margin-bottom: 24px;
+            text-align: center;
+        }
+        .sidebar .bottom a {
+            color: #fff;
+            font-size: 1.1rem;
+            text-decoration: none;
+            padding: 8px 0;
+            display: block;
+        }
+        .main {
+            margin-left: 220px;
+            min-height: 100vh;
+            background: #e6ecf5;
+        }
+        .topbar {
+            background: #435585;
+            color: #fff;
+            padding: 18px 32px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .topbar .search {
+            background: #fff;
+            border-radius: 24px;
+            padding: 6px 18px;
+            display: flex;
+            align-items: center;
+            width: 320px;
+        }
+        .topbar .search input {
+            border: none;
+            outline: none;
+            font-size: 1rem;
+            background: transparent;
+            margin-left: 8px;
+            width: 100%;
+        }
+        .topbar .user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .topbar .user .fa-user-circle {
+            font-size: 1.7rem;
+        }
+        .topbar .user .name {
+            font-weight: 500;
+            font-size: 1.08rem;
+        }
+        .pembayaran-content {
+            padding: 32px 32px 0 32px;
+        }
+        .pembayaran-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+            color: #263159;
+        }
+        .pembayaran-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+        .pembayaran-header .pembayaran-title {
+            margin: 0;
+        }
+        .pembayaran-header .btn-tambah {
+            background: #435585;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 18px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .pembayaran-header .btn-tambah:hover {
+            background: #263159;
+        }
+        .pembayaran-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(38,49,89,0.07);
+            overflow: hidden;
+        }
+        .pembayaran-table th, .pembayaran-table td {
+            padding: 12px 10px;
+            text-align: left;
+        }
+        .pembayaran-table th {
+            background: #435585;
+            color: #fff;
+            font-weight: 500;
+        }
+        .pembayaran-table tr:not(:last-child) {
+            border-bottom: 1px solid #e6ecf5;
+        }
+        .pembayaran-table td.status {
+            font-weight: 600;
+        }
+        .pembayaran-table td.status.lunas {
+            color: #27ae60;
+        }
+        .pembayaran-table td.status.pending {
+            color: #f1c40f;
+        }
+        .pembayaran-table td.status.gagal {
+            color: #e74c3c;
+        }
+        .pembayaran-table td.aksi a {
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 6px 12px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            margin-right: 6px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-detail { background: #3498db; }
+        .btn-edit { background: #f1c40f; }
+        .btn-delete { background: #e74c3c; }
+
+        /* Form Tambah/Edit Payment */
+        #formPembayaran {
+            background: #fff;
+            padding: 24px;
+            margin-bottom: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(38,49,89,0.07);
+            display: none;
+        }
+        #formPembayaran h3 { margin-top: 0; color: #263159; }
+        #formPembayaran .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+        #formPembayaran .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #555;
+        }
+        #formPembayaran .form-group input,
+        #formPembayaran .form-group select {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1.2px solid #d1d5db;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+        #formPembayaran .form-actions {
+            grid-column: 1 / -1;
+            text-align: right;
+            margin-top: 16px;
+        }
+        #formPembayaran .form-actions button {
+            border: none;
+            border-radius: 6px;
+            padding: 8px 18px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            margin-left: 8px;
+        }
+        #formPembayaran .btn-simpan { background: #27ae60; color: #fff; }
+        #formPembayaran .btn-batal { background: #ecf0f1; color: #333; }
+
+        @media (max-width: 900px) {
+            .main {
+                margin-left: 0;
+            }
+            .sidebar {
+                position: static;
+                width: 100%;
+                flex-direction: row;
+                height: auto;
+            }
+            .pembayaran-content {
+                padding: 18px 6px 0 6px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo"><i class="fa fa-coffee"></i> Toko Kopi</div>
+        <nav>
+            <a href="dashboard.html"><i class="fa fa-tachometer-alt"></i> Dashboard</a>
+            <a href="kategori.html"><i class="fa fa-list-ul"></i> Kategori Produk</a>
+            <a href="produk.html"><i class="fa fa-shopping-bag"></i> Produk</a>
+            <a href="pesanan.html"><i class="fa fa-receipt"></i> Pesanan</a>
+            <a href="#kupon"><i class="fa fa-ticket-alt"></i> Kupon</a>
+            <a href="pembayaran.html" class="active"><i class="fa fa-money-check-alt"></i> Pembayaran</a>
+            <a href="pelanggan.html"><i class="fa fa-users"></i> Pelanggan</a>
+            <a href="#review"><i class="fa fa-edit"></i> Review Pelanggan</a>
+            <a href="#kontak"><i class="fa fa-phone"></i> Kontak</a>
+        </nav>
+        <div class="bottom">
+            <a href="login.html"><i class="fa fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </div>
+    <div class="main">
+        <div class="topbar">
+            <div class="search">
+                <i class="fa fa-search" style="color:#888"></i>
+                <input type="text" placeholder="Cari pembayaran...">
+            </div>
+            <div class="user">
+                <i class="fa fa-user-circle"></i>
+                <span class="name">Admin</span>
+            </div>
+        </div>
+        <div class="pembayaran-content">
+            <div class="pembayaran-header">
+                <div class="pembayaran-title">Daftar Pembayaran</div>
+                <button class="btn-tambah" id="btnTambahPembayaran">
+                    <i class="fa fa-plus"></i> Tambah Pembayaran
+                </button>
+            </div>
+
+            <form id="formPembayaran">
+                <h3 id="formTitle">Tambah Pembayaran Baru</h3>
+                <input type="hidden" id="editPaymentId">
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="orderNumber">Nomor Pesanan</label>
+                        <input type="text" id="orderNumber" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerName">Nama Customer</label>
+                        <input type="text" id="customerName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="paymentAmount">Jumlah Pembayaran</label>
+                        <input type="number" id="paymentAmount" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="paymentMethod">Metode Pembayaran</label>
+                        <select id="paymentMethod" required>
+                            <option value="">Pilih metode</option>
+                            <option value="Transfer Bank">Transfer Bank</option>
+                            <option value="E-Wallet">E-Wallet</option>
+                            <option value="Cash">Cash</option>
+                            <option value="Credit Card">Credit Card</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="paymentDate">Tanggal Pembayaran</label>
+                        <input type="date" id="paymentDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="paymentStatus">Status</label>
+                        <select id="paymentStatus" required>
+                            <option value="Lunas">Lunas</option>
+                            <option value="Pending">Pending</option>
+                            <option value="Gagal">Gagal</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn-batal">Batal</button>
+                    <button type="submit" class="btn-simpan">Simpan</button>
+                </div>
+            </form>
+
+            <table class="pembayaran-table">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Nomor Pesanan</th>
+                        <th>Customer</th>
+                        <th>Jumlah</th>
+                        <th>Metode</th>
+                        <th>Tanggal</th>
+                        <th>Status</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody id="paymentsTableBody">
+                    <!-- Data pembayaran akan dimuat di sini -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script src="data.js"></script>
+    <script>
+        // --- Data Persistence Logic for Payments ---
+        let payments;
+        const savedPayments = localStorage.getItem('payments');
+        if (savedPayments) {
+            payments = JSON.parse(savedPayments);
+        } else {
+            // Initialize with sample payment data
+            payments = [
+                { id: 1, orderNumber: 'ORD001', customerName: 'Andi', amount: 1022000, method: 'Transfer Bank', date: '2024-05-01', status: 'Lunas' },
+                { id: 2, orderNumber: 'ORD002', customerName: 'Budi', amount: 1111000, method: 'E-Wallet', date: '2024-05-02', status: 'Pending' },
+                { id: 3, orderNumber: 'ORD003', customerName: 'Citra', amount: 543000, method: 'Cash', date: '2024-05-03', status: 'Gagal' }
+            ];
+            localStorage.setItem('payments', JSON.stringify(payments));
+        }
+        // --- End of Data Persistence Logic ---
+
+        const tableBody = document.getElementById('paymentsTableBody');
+        const formPembayaran = document.getElementById('formPembayaran');
+        const btnTambah = document.getElementById('btnTambahPembayaran');
+        const formTitle = document.getElementById('formTitle');
+        const paymentIdInput = document.getElementById('editPaymentId');
+        const orderNumberInput = document.getElementById('orderNumber');
+        const customerNameInput = document.getElementById('customerName');
+        const paymentAmountInput = document.getElementById('paymentAmount');
+        const paymentMethodInput = document.getElementById('paymentMethod');
+        const paymentDateInput = document.getElementById('paymentDate');
+        const paymentStatusInput = document.getElementById('paymentStatus');
+
+        function getStatusClass(status) {
+            switch (status.toLowerCase()) {
+                case 'lunas': return 'lunas';
+                case 'pending': return 'pending';
+                case 'gagal': return 'gagal';
+                default: return '';
+            }
+        }
+
+        function loadPayments() {
+            tableBody.innerHTML = '';
+            payments.forEach((payment, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${payment.orderNumber}</td>
+                    <td>${payment.customerName}</td>
+                    <td>Rp ${payment.amount.toLocaleString('id-ID')}</td>
+                    <td>${payment.method}</td>
+                    <td>${payment.date}</td>
+                    <td class="status ${getStatusClass(payment.status)}">${payment.status}</td>
+                    <td class="aksi">
+                        <a href="#" class="btn-detail" data-id="${payment.id}"><i class="fa fa-eye"></i></a>
+                        <a href="#" class="btn-edit" data-id="${payment.id}"><i class="fa fa-pencil-alt"></i></a>
+                        <a href="#" class="btn-delete" data-id="${payment.id}"><i class="fa fa-trash"></i></a>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function showAddForm() {
+            formTitle.textContent = 'Tambah Pembayaran Baru';
+            formPembayaran.reset();
+            paymentIdInput.value = '';
+            formPembayaran.style.display = 'block';
+        }
+
+        function showEditForm(payment) {
+            formTitle.textContent = 'Edit Pembayaran';
+            paymentIdInput.value = payment.id;
+            orderNumberInput.value = payment.orderNumber;
+            customerNameInput.value = payment.customerName;
+            paymentAmountInput.value = payment.amount;
+            paymentMethodInput.value = payment.method;
+            paymentDateInput.value = payment.date;
+            paymentStatusInput.value = payment.status;
+            formPembayaran.style.display = 'block';
+        }
+
+        function hideForm() {
+            formPembayaran.style.display = 'none';
+        }
+
+        document.addEventListener('DOMContentLoaded', loadPayments);
+
+        btnTambah.addEventListener('click', showAddForm);
+
+        tableBody.addEventListener('click', (e) => {
+            const link = e.target.closest('a');
+            if (!link) return;
+
+            const id = parseInt(link.dataset.id);
+            if (link.classList.contains('btn-edit')) {
+                e.preventDefault();
+                const payment = payments.find(p => p.id === id);
+                if (payment) showEditForm(payment);
+            }
+
+            if (link.classList.contains('btn-delete')) {
+                e.preventDefault();
+                if (confirm(`Yakin ingin menghapus pembayaran ${payments.find(p => p.id === id)?.orderNumber}?`)) {
+                    payments = payments.filter(p => p.id !== id);
+                    localStorage.setItem('payments', JSON.stringify(payments));
+                    loadPayments();
+                }
+            }
+
+            if (link.classList.contains('btn-detail')) {
+                e.preventDefault();
+                const payment = payments.find(p => p.id === id);
+                if (payment) {
+                    alert(`Detail Pembayaran:\nNomor Pesanan: ${payment.orderNumber}\nCustomer: ${payment.customerName}\nJumlah: Rp ${payment.amount.toLocaleString('id-ID')}\nMetode: ${payment.method}\nTanggal: ${payment.date}\nStatus: ${payment.status}`);
+                }
+            }
+        });
+
+        formPembayaran.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const paymentData = {
+                orderNumber: orderNumberInput.value,
+                customerName: customerNameInput.value,
+                amount: parseInt(paymentAmountInput.value),
+                method: paymentMethodInput.value,
+                date: paymentDateInput.value,
+                status: paymentStatusInput.value
+            };
+
+            if (paymentIdInput.value) {
+                // Edit existing payment
+                const id = parseInt(paymentIdInput.value);
+                const paymentIndex = payments.findIndex(p => p.id === id);
+                if (paymentIndex !== -1) {
+                    payments[paymentIndex] = { ...payments[paymentIndex], ...paymentData };
+                }
+            } else {
+                // Add new payment
+                const newId = Math.max(...payments.map(p => p.id), 0) + 1;
+                payments.push({
+                    id: newId,
+                    ...paymentData
+                });
+            }
+
+            localStorage.setItem('payments', JSON.stringify(payments));
+            loadPayments();
+            hideForm();
+        });
+
+        formPembayaran.querySelector('.btn-batal').addEventListener('click', hideForm);
+    </script>
+</body>
+</html> 

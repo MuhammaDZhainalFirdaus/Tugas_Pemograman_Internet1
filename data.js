@@ -49,4 +49,11 @@ const initialOrders = [
     { id: 1, customerName: 'Andi', products: [{ name: 'Syphon Coffee Maker', quantity: 2 }], totalPrice: 1022000, status: 'Selesai', date: '2024-05-01' },
     { id: 2, customerName: 'Budi', products: [{ name: 'Electric Coffee Grinder', quantity: 1 }], totalPrice: 1111000, status: 'Proses', date: '2024-05-02' },
     { id: 3, customerName: 'Citra', products: [{ name: 'Vietnam Drip', quantity: 3 }], totalPrice: 543000, status: 'Batal', date: '2024-05-03' }
+];
+
+const initialCustomers = [
+    { id: 1, name: 'Andi', email: 'andi@example.com', joinDate: '2024-04-15' },
+    { id: 2, name: 'Budi', email: 'budi@example.com', joinDate: '2024-04-18' },
+    { id: 3, name: 'Citra', email: 'citra@example.com', joinDate: '2024-04-21' },
+    { id: 4, name: 'Penerima04', email: 'penerima04@example.com', joinDate: '2024-04-25' }
 ]; 
