@@ -57,7 +57,33 @@
             </div>
         </div>
         <div class="pembayaran-content">
-            <div class="pembayaran-title">Daftar Pembayaran Saya</div>
+            <div class="pembayaran-title">Pembayaran Pesanan</div>
+            <form id="formPembayaranUser" enctype="multipart/form-data" style="background:#fff;padding:28px 24px 24px 24px;border-radius:14px;box-shadow:0 2px 8px rgba(38,49,89,0.07);margin-bottom:36px;max-width:520px;">
+                <div style="margin-bottom:20px;">
+                    <label for="orderIdInput" style="font-weight:600;display:block;margin-bottom:7px;">Pilih Pesanan</label>
+                    <select name="order_id" id="orderIdInput" required style="width:100%;padding:10px 12px;border-radius:7px;border:1.5px solid #d1d5db;font-size:1rem;">
+                        <option value="">Pilih pesanan...</option>
+                    </select>
+                </div>
+                <div style="margin-bottom:20px;">
+                    <label for="bankNameInput" style="font-weight:600;display:block;margin-bottom:7px;">Nama Bank</label>
+                    <input type="text" name="bank_name" id="bankNameInput" required placeholder="Contoh: BCA, Mandiri, BRI" style="width:100%;padding:10px 12px;border-radius:7px;border:1.5px solid #d1d5db;font-size:1rem;">
+                </div>
+                <div style="margin-bottom:20px;">
+                    <label for="amountInput" style="font-weight:600;display:block;margin-bottom:7px;">Jumlah Transfer</label>
+                    <input type="number" name="amount" id="amountInput" required placeholder="Masukkan nominal transfer" style="width:100%;padding:10px 12px;border-radius:7px;border:1.5px solid #d1d5db;font-size:1rem;">
+                </div>
+                <div style="margin-bottom:20px;">
+                    <label for="senderNameInput" style="font-weight:600;display:block;margin-bottom:7px;">Nama Pengirim</label>
+                    <input type="text" name="sender_name" id="senderNameInput" required placeholder="Nama sesuai rekening pengirim" style="width:100%;padding:10px 12px;border-radius:7px;border:1.5px solid #d1d5db;font-size:1rem;">
+                </div>
+                <div style="margin-bottom:26px;">
+                    <label for="buktiInput" style="font-weight:600;display:block;margin-bottom:7px;">Bukti Pembayaran</label>
+                    <input type="file" name="bukti" id="buktiInput" accept="image/*" required style="width:100%;">
+                </div>
+                <button type="submit" style="background:#3498db;color:#fff;border:none;border-radius:7px;padding:12px 0;font-size:1.08rem;width:100%;font-weight:600;">Kirim Bukti Pembayaran</button>
+            </form>
+            <div class="pembayaran-title" style="margin-top:0;">Daftar Pembayaran Saya</div>
             <table class="pembayaran-table">
                 <thead>
                     <tr>
@@ -113,6 +139,51 @@
     }
 
     document.addEventListener('DOMContentLoaded', loadPembayaran);
+
+    function getUnpaidOrders() {
+        let pesanan = JSON.parse(localStorage.getItem('pesanan')) || [];
+        if (loggedInUser) {
+            return pesanan.filter(p => p.customerUsername === loggedInUser.username && (!p.status || p.status === 'proses' || p.status === 'pending'));
+        }
+        return [];
+    }
+    function populateOrderSelect() {
+        const select = document.getElementById('orderIdInput');
+        select.innerHTML = '<option value="">Pilih pesanan...</option>';
+        const orders = getUnpaidOrders();
+        const lastOrderId = localStorage.getItem('lastOrderId');
+        orders.forEach(p => {
+            const label = `#${p.orderId} - ${p.nama_produk || ''} (Rp ${p.total ? p.total.toLocaleString('id-ID') : '-'})`;
+            const selected = lastOrderId && String(p.orderId) === String(lastOrderId) ? 'selected' : '';
+            select.innerHTML += `<option value="${p.orderId}" ${selected}>${label}</option>`;
+        });
+        if (lastOrderId) localStorage.removeItem('lastOrderId');
+    }
+    populateOrderSelect();
+
+    document.getElementById('formPembayaranUser').onsubmit = async function(e) {
+        e.preventDefault();
+        const form = e.target;
+        const formData = new FormData(form);
+        if (!formData.get('order_id')) {
+            alert('Silakan pilih pesanan terlebih dahulu!');
+            return;
+        }
+        try {
+            const res = await fetch('submit_pembayaran.php', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (data.status === 'success') {
+                alert('Bukti pembayaran berhasil dikirim!');
+                form.reset();
+                populateOrderSelect();
+                loadPembayaran();
+            } else {
+                alert(data.message || 'Gagal mengirim pembayaran');
+            }
+        } catch (err) {
+            alert('Gagal mengirim pembayaran');
+        }
+    };
     </script>
 </body>
 </html> 

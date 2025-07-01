@@ -183,7 +183,7 @@
             display: inline-block;
         }
         .btn-detail { background: #3498db; }
-        .btn-edit { background: #f1c40f; }
+        .btn-edit { background: #f1c40f; color: #fff; }
         .btn-delete { background: #e74c3c; }
 
         /* Form Tambah/Edit Payment */
@@ -342,162 +342,128 @@
                         <th>Aksi</th>
                     </tr>
                 </thead>
-                <tbody id="paymentsTableBody">
+                <tbody id="pembayaranTableBody">
                     <!-- Data pembayaran akan dimuat di sini -->
                 </tbody>
             </table>
         </div>
     </div>
+    <!-- Modal Edit Status -->
+    <div id="modalEditStatus" style="display:none;position:fixed;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.25);z-index:1000;align-items:center;justify-content:center;">
+      <div style="background:#fff;padding:24px 32px;border-radius:10px;min-width:320px;max-width:90vw;box-shadow:0 2px 12px rgba(0,0,0,0.12);position:relative;">
+        <h3>Ubah Status Pembayaran</h3>
+        <form id="formEditStatus">
+          <input type="hidden" id="editOrderId">
+          <div style="margin-bottom:16px;">
+            <label for="editStatus">Status</label>
+            <select id="editStatus" required style="width:100%;padding:8px 10px;border-radius:6px;border:1.2px solid #d1d5db;font-size:1rem;">
+              <option value="selesai">Selesai</option>
+              <option value="proses">Proses</option>
+              <option value="batal">Batal</option>
+            </select>
+          </div>
+          <div style="text-align:right;">
+            <button type="button" id="btnBatalEdit" style="background:#eee;color:#333;border:none;border-radius:6px;padding:8px 18px;margin-right:8px;">Batal</button>
+            <button type="submit" style="background:#27ae60;color:#fff;border:none;border-radius:6px;padding:8px 18px;">Simpan</button>
+          </div>
+        </form>
+      </div>
+    </div>
     <script src="data.js"></script>
     <script>
-        // --- Data Persistence Logic for Payments ---
-        let payments;
-        const savedPayments = localStorage.getItem('payments');
-        if (savedPayments) {
-            payments = JSON.parse(savedPayments);
-        } else {
-            // Initialize with sample payment data
-            payments = [
-                { id: 1, orderNumber: 'ORD001', customerName: 'Andi', amount: 1022000, method: 'Transfer Bank', date: '2024-05-01', status: 'Lunas' },
-                { id: 2, orderNumber: 'ORD002', customerName: 'Budi', amount: 1111000, method: 'E-Wallet', date: '2024-05-02', status: 'Pending' },
-                { id: 3, orderNumber: 'ORD003', customerName: 'Citra', amount: 543000, method: 'Cash', date: '2024-05-03', status: 'Gagal' }
-            ];
-            localStorage.setItem('payments', JSON.stringify(payments));
+    function getStatusClass(status) {
+        switch (status.toLowerCase()) {
+            case 'selesai': return 'lunas';
+            case 'proses': return 'pending';
+            case 'batal': return 'gagal';
+            default: return '';
         }
-        // --- End of Data Persistence Logic ---
+    }
 
-        const tableBody = document.getElementById('paymentsTableBody');
-        const formPembayaran = document.getElementById('formPembayaran');
-        const btnTambah = document.getElementById('btnTambahPembayaran');
-        const formTitle = document.getElementById('formTitle');
-        const paymentIdInput = document.getElementById('editPaymentId');
-        const orderNumberInput = document.getElementById('orderNumber');
-        const customerNameInput = document.getElementById('customerName');
-        const paymentAmountInput = document.getElementById('paymentAmount');
-        const paymentMethodInput = document.getElementById('paymentMethod');
-        const paymentDateInput = document.getElementById('paymentDate');
-        const paymentStatusInput = document.getElementById('paymentStatus');
+    async function loadPembayaran() {
+        const tableBody = document.getElementById('pembayaranTableBody');
+        tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Memuat data...</td></tr>';
 
-        function getStatusClass(status) {
-            switch (status.toLowerCase()) {
-                case 'lunas': return 'lunas';
-                case 'pending': return 'pending';
-                case 'gagal': return 'gagal';
-                default: return '';
+        try {
+            const response = await fetch('get_pesanan_admin.php');
+            const orders = await response.json();
+
+            if (orders.status === 'error') {
+                tableBody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:red;">${orders.message}</td></tr>`;
+                return;
             }
-        }
 
-        function loadPayments() {
+            if (orders.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Belum ada pembayaran/pesanan.</td></tr>';
+                return;
+            }
+
             tableBody.innerHTML = '';
-            payments.forEach((payment, index) => {
+            orders.forEach((order, idx) => {
                 const row = document.createElement('tr');
                 row.innerHTML = `
-                    <td>${index + 1}</td>
-                    <td>${payment.orderNumber}</td>
-                    <td>${payment.customerName}</td>
-                    <td>Rp ${payment.amount.toLocaleString('id-ID')}</td>
-                    <td>${payment.method}</td>
-                    <td>${payment.date}</td>
-                    <td class="status ${getStatusClass(payment.status)}">${payment.status}</td>
+                    <td>${idx + 1}</td>
+                    <td>#${order.id_order}</td>
+                    <td>${order.nama_user || order.username}</td>
+                    <td>${order.nama_produk}</td>
+                    <td>${order.jumlah}</td>
+                    <td>${new Date(order.tanggal_order).toLocaleDateString('id-ID')}</td>
+                    <td>Rp ${parseFloat(order.total_harga).toLocaleString('id-ID')}</td>
+                    <td class="status ${getStatusClass(order.status)}">${order.status}</td>
                     <td class="aksi">
-                        <a href="#" class="btn-detail" data-id="${payment.id}"><i class="fa fa-eye"></i></a>
-                        <a href="#" class="btn-edit" data-id="${payment.id}"><i class="fa fa-pencil-alt"></i></a>
-                        <a href="#" class="btn-delete" data-id="${payment.id}"><i class="fa fa-trash"></i></a>
+                        <a href="#" class="btn-edit-status btn-edit" data-id="${order.id_order}" data-status="${order.status}"><i class="fa fa-edit"></i> Edit</a>
                     </td>
                 `;
                 tableBody.appendChild(row);
             });
+        } catch (error) {
+            tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:red;">Gagal memuat data pembayaran.</td></tr>';
+            console.error('Error:', error);
         }
+    }
 
-        function showAddForm() {
-            formTitle.textContent = 'Tambah Pembayaran Baru';
-            formPembayaran.reset();
-            paymentIdInput.value = '';
-            formPembayaran.style.display = 'block';
-        }
-
-        function showEditForm(payment) {
-            formTitle.textContent = 'Edit Pembayaran';
-            paymentIdInput.value = payment.id;
-            orderNumberInput.value = payment.orderNumber;
-            customerNameInput.value = payment.customerName;
-            paymentAmountInput.value = payment.amount;
-            paymentMethodInput.value = payment.method;
-            paymentDateInput.value = payment.date;
-            paymentStatusInput.value = payment.status;
-            formPembayaran.style.display = 'block';
-        }
-
-        function hideForm() {
-            formPembayaran.style.display = 'none';
-        }
-
-        document.addEventListener('DOMContentLoaded', loadPayments);
-
-        btnTambah.addEventListener('click', showAddForm);
-
-        tableBody.addEventListener('click', (e) => {
-            const link = e.target.closest('a');
-            if (!link) return;
-
-            const id = parseInt(link.dataset.id);
-            if (link.classList.contains('btn-edit')) {
+    document.addEventListener('DOMContentLoaded', () => {
+        loadPembayaran();
+        // Modal logic
+        const modal = document.getElementById('modalEditStatus');
+        const form = document.getElementById('formEditStatus');
+        const editOrderId = document.getElementById('editOrderId');
+        const editStatus = document.getElementById('editStatus');
+        const btnBatal = document.getElementById('btnBatalEdit');
+        document.body.addEventListener('click', function(e) {
+            const btn = e.target.closest('.btn-edit-status');
+            if (btn) {
                 e.preventDefault();
-                const payment = payments.find(p => p.id === id);
-                if (payment) showEditForm(payment);
-            }
-
-            if (link.classList.contains('btn-delete')) {
-                e.preventDefault();
-                if (confirm(`Yakin ingin menghapus pembayaran ${payments.find(p => p.id === id)?.orderNumber}?`)) {
-                    payments = payments.filter(p => p.id !== id);
-                    localStorage.setItem('payments', JSON.stringify(payments));
-                    loadPayments();
-                }
-            }
-
-            if (link.classList.contains('btn-detail')) {
-                e.preventDefault();
-                const payment = payments.find(p => p.id === id);
-                if (payment) {
-                    alert(`Detail Pembayaran:\nNomor Pesanan: ${payment.orderNumber}\nCustomer: ${payment.customerName}\nJumlah: Rp ${payment.amount.toLocaleString('id-ID')}\nMetode: ${payment.method}\nTanggal: ${payment.date}\nStatus: ${payment.status}`);
-                }
+                editOrderId.value = btn.dataset.id;
+                editStatus.value = btn.dataset.status.toLowerCase();
+                modal.style.display = 'flex';
             }
         });
-
-        formPembayaran.addEventListener('submit', (e) => {
+        btnBatal.onclick = function(e) {
             e.preventDefault();
-            const paymentData = {
-                orderNumber: orderNumberInput.value,
-                customerName: customerNameInput.value,
-                amount: parseInt(paymentAmountInput.value),
-                method: paymentMethodInput.value,
-                date: paymentDateInput.value,
-                status: paymentStatusInput.value
-            };
-
-            if (paymentIdInput.value) {
-                // Edit existing payment
-                const id = parseInt(paymentIdInput.value);
-                const paymentIndex = payments.findIndex(p => p.id === id);
-                if (paymentIndex !== -1) {
-                    payments[paymentIndex] = { ...payments[paymentIndex], ...paymentData };
-                }
-            } else {
-                // Add new payment
-                const newId = Math.max(...payments.map(p => p.id), 0) + 1;
-                payments.push({
-                    id: newId,
-                    ...paymentData
+            modal.style.display = 'none';
+        };
+        form.onsubmit = async function(e) {
+            e.preventDefault();
+            const id_order = editOrderId.value;
+            const status = editStatus.value;
+            try {
+                const res = await fetch('update_status_pesanan.php', {
+                    method: 'POST',
+                    body: new URLSearchParams({id_order, status})
                 });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    modal.style.display = 'none';
+                    loadPembayaran();
+                } else {
+                    alert(data.message || 'Gagal update status');
+                }
+            } catch (err) {
+                alert('Gagal update status');
             }
-
-            localStorage.setItem('payments', JSON.stringify(payments));
-            loadPayments();
-            hideForm();
-        });
-
-        formPembayaran.querySelector('.btn-batal').addEventListener('click', hideForm);
+        };
+    });
     </script>
 </body>
 </html> 

@@ -308,110 +308,53 @@
             </table>
         </div>
     </div>
-    <script src="data.js"></script>
     <script>
-        // --- Data Persistence Logic for Orders ---
-        let orders;
-        const savedOrders = localStorage.getItem('orders');
-        if (savedOrders) {
-            orders = JSON.parse(savedOrders);
-        } else {
-            orders = initialOrders;
-            localStorage.setItem('orders', JSON.stringify(orders));
+    function getStatusClass(status) {
+        switch (status.toLowerCase()) {
+            case 'selesai': return 'selesai';
+            case 'proses': return 'proses';
+            case 'batal': return 'batal';
+            default: return '';
         }
-        // --- End of Data Persistence Logic ---
+    }
 
+    async function loadOrders() {
         const tableBody = document.getElementById('ordersTableBody');
-        const formEdit = document.getElementById('formEditPesanan');
-        const orderIdInput = document.getElementById('editOrderId');
-        const customerNameInput = document.getElementById('editCustomerName');
-        const dateInput = document.getElementById('editDate');
-        const statusInput = document.getElementById('editStatus');
-        
-        function getStatusClass(status) {
-            switch (status.toLowerCase()) {
-                case 'selesai': return 'selesai';
-                case 'proses': return 'proses';
-                case 'batal': return 'batal';
-                default: return '';
+        tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Memuat data...</td></tr>';
+        try {
+            const response = await fetch('get_pesanan_admin.php');
+            const orders = await response.json();
+            if (orders.status === 'error') {
+                tableBody.innerHTML = `<tr><td colspan="8" style="text-align:center;color:red;">${orders.message}</td></tr>`;
+                return;
             }
-        }
-
-        function loadOrders() {
+            if (orders.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Belum ada pesanan.</td></tr>';
+                return;
+            }
             tableBody.innerHTML = '';
-            orders.forEach(order => {
+            orders.forEach((order, idx) => {
                 const row = document.createElement('tr');
-                const productsText = order.products.map(p => `${p.name} (x${p.quantity})`).join(', ');
                 row.innerHTML = `
-                    <td>${order.id}</td>
-                    <td>${order.customerName}</td>
-                    <td>${productsText}</td>
-                    <td>1</td>
-                    <td>Rp ${order.totalPrice.toLocaleString('id-ID')}</td>
+                    <td>${idx + 1}</td>
+                    <td>${order.nama_user || order.username}</td>
+                    <td>${order.nama_produk}</td>
+                    <td>${order.jumlah}</td>
+                    <td>Rp ${parseFloat(order.total_harga).toLocaleString('id-ID')}</td>
                     <td class="status ${getStatusClass(order.status)}">${order.status}</td>
-                    <td>${order.date}</td>
+                    <td>${new Date(order.tanggal_order).toLocaleDateString('id-ID')}</td>
                     <td class="aksi">
-                        <a href="detail-pesanan.html?id=${order.id}" class="btn-detail"><i class="fa fa-eye"></i></a>
-                        <a href="#" class="btn-edit" data-id="${order.id}"><i class="fa fa-pencil-alt"></i></a>
-                        <a href="#" class="btn-delete" data-id="${order.id}"><i class="fa fa-trash"></i></a>
+                        <a href="detail-pesanan.html?id=${order.id_order}" class="btn-detail"><i class="fa fa-eye"></i></a>
                     </td>
                 `;
                 tableBody.appendChild(row);
             });
+        } catch (error) {
+            tableBody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:red;">Gagal memuat data pesanan.</td></tr>';
+            console.error('Error:', error);
         }
-        
-        function showEditForm(order) {
-            orderIdInput.value = order.id;
-            customerNameInput.value = order.customerName;
-            dateInput.value = order.date;
-            statusInput.value = order.status;
-            formEdit.style.display = 'block';
-        }
-
-        function hideEditForm() {
-            formEdit.style.display = 'none';
-        }
-
-        document.addEventListener('DOMContentLoaded', loadOrders);
-
-        tableBody.addEventListener('click', (e) => {
-            const link = e.target.closest('a');
-            if (!link) return;
-
-            const id = parseInt(link.dataset.id);
-            if (link.classList.contains('btn-edit')) {
-                e.preventDefault();
-                const order = orders.find(o => o.id === id);
-                if (order) showEditForm(order);
-            }
-
-            if (link.classList.contains('btn-delete')) {
-                e.preventDefault();
-                if (confirm(`Yakin ingin menghapus pesanan #${id}?`)) {
-                    orders = orders.filter(o => o.id !== id);
-                    localStorage.setItem('orders', JSON.stringify(orders));
-                    loadOrders();
-                }
-            }
-        });
-
-        formEdit.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const id = parseInt(orderIdInput.value);
-            const order = orders.find(o => o.id === id);
-            if (order) {
-                order.customerName = customerNameInput.value;
-                order.date = dateInput.value;
-                order.status = statusInput.value;
-                localStorage.setItem('orders', JSON.stringify(orders));
-                loadOrders();
-                hideEditForm();
-            } else {
-                alert('Pesanan tidak ditemukan!');
-            }
-        });
-        
-        formEdit.querySelector('.btn-batal').addEventListener('click', hideEditForm);
+    }
+    document.addEventListener('DOMContentLoaded', loadOrders);
     </script>
 </body>
 </html> 
