@@ -1,45 +1,25 @@
 <?php
 session_start();
 include 'config.php';
+header('Content-Type: application/json');
 
-// Pastikan user sudah login
 if (!isset($_SESSION['user_id'])) {
-    header('Content-Type: application/json');
-    echo json_encode(['status' => 'error', 'message' => 'Akses ditolak. Silakan login terlebih dahulu.']);
+    echo json_encode([]);
     exit;
 }
 
-header('Content-Type: application/json');
-
-$user_id = $_SESSION['user_id'];
-$orders = [];
-
-// Query untuk mengambil data pesanan beserta nama produk
-$query = "
-    SELECT 
-        o.id_order,
-        o.jumlah,
-        o.total_harga,
-        o.status,
-        o.tanggal_order,
-        p.nama_produk
-    FROM orders AS o
-    JOIN products AS p ON o.id_produk = p.id
-    WHERE o.id_user = ?
-    ORDER BY o.tanggal_order DESC
-";
-
+$id_user = $_SESSION['user_id'];
+$query = "SELECT o.id_order, p.nama_produk, o.total_harga, o.status FROM orders o JOIN products p ON o.id_produk = p.id WHERE o.id_user = ? AND (o.status = 'pending' OR o.status = 'proses') ORDER BY o.id_order DESC";
 $stmt = $koneksi->prepare($query);
-$stmt->bind_param("i", $user_id);
+$stmt->bind_param('i', $id_user);
 $stmt->execute();
 $result = $stmt->get_result();
 
+$pesanan = [];
 while ($row = $result->fetch_assoc()) {
-    $orders[] = $row;
+    $pesanan[] = $row;
 }
-
+echo json_encode($pesanan);
 $stmt->close();
 $koneksi->close();
-
-echo json_encode($orders);
 ?> 

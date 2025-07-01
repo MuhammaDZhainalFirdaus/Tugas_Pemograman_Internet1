@@ -140,24 +140,21 @@
 
     document.addEventListener('DOMContentLoaded', loadPembayaran);
 
-    function getUnpaidOrders() {
-        let pesanan = JSON.parse(localStorage.getItem('pesanan')) || [];
-        if (loggedInUser) {
-            return pesanan.filter(p => p.customerUsername === loggedInUser.username && (!p.status || p.status === 'proses' || p.status === 'pending'));
-        }
-        return [];
+    async function getUnpaidOrders() {
+        const res = await fetch('get_pesanan_user.php');
+        return await res.json();
     }
-    function populateOrderSelect() {
+    async function populateOrderSelect() {
         const select = document.getElementById('orderIdInput');
         select.innerHTML = '<option value="">Pilih pesanan...</option>';
-        const orders = getUnpaidOrders();
-        const lastOrderId = localStorage.getItem('lastOrderId');
+        const orders = await getUnpaidOrders();
+        const urlParams = new URLSearchParams(window.location.search);
+        const lastOrderId = urlParams.get('order_id');
         orders.forEach(p => {
-            const label = `#${p.orderId} - ${p.nama_produk || ''} (Rp ${p.total ? p.total.toLocaleString('id-ID') : '-'})`;
-            const selected = lastOrderId && String(p.orderId) === String(lastOrderId) ? 'selected' : '';
-            select.innerHTML += `<option value="${p.orderId}" ${selected}>${label}</option>`;
+            const label = `#${p.id_order} - ${p.nama_produk} (Rp ${p.total_harga ? parseFloat(p.total_harga).toLocaleString('id-ID') : '-'})`;
+            const selected = lastOrderId && String(p.id_order) === String(lastOrderId) ? 'selected' : '';
+            select.innerHTML += `<option value="${p.id_order}" ${selected}>${label}</option>`;
         });
-        if (lastOrderId) localStorage.removeItem('lastOrderId');
     }
     populateOrderSelect();
 
