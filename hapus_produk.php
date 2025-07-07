@@ -50,7 +50,7 @@ if ($stmt_delete->execute()) {
         echo json_encode(['status' => 'error', 'message' => 'Gagal menghapus produk, ID tidak ditemukan.']);
     }
 } else {
-    echo json_encode(['status' => 'error', 'message' => 'Gagal menghapus produk dari database.']);
+    echo json_encode(['status' => 'error', 'message' => 'Gagal menghapus produk dari database: ' . $koneksi->error]);
 }
 
 $stmt_delete->close();

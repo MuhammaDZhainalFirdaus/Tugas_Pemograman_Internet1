@@ -236,7 +236,12 @@
             </div>
         </div>
         <div class="dashboard-content">
-            <div class="dashboard-title">Dashboard</div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div class="dashboard-title">Dashboard</div>
+                <button id="resetSummaryBtn" style="background:#e74c3c;color:#fff;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-weight:600;">
+                    Reset
+                </button>
+            </div>
             <div class="summary-cards">
                 <div class="summary-card">
                     <div class="icon" style="background:#ffe5e5;color:#e74c3c"><i class="fa fa-box"></i></div>
@@ -329,6 +334,11 @@
             }
         }
     });
+    document.getElementById('resetSummaryBtn').onclick = function() {
+        document.querySelectorAll('.summary-card .value').forEach(el => {
+            el.textContent = '0';
+        });
+    };
     </script>
 </body>
 </html> 

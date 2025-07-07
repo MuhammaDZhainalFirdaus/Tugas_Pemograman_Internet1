@@ -101,13 +101,13 @@
             if (orders.length === 0) {
                 tableBody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Anda belum memiliki pesanan.</td></tr>';
                 return;
-            }
+        }
 
             tableBody.innerHTML = ''; // Kosongkan tabel sebelum diisi
-            orders.forEach((order, idx) => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${idx + 1}</td>
+        orders.forEach((order, idx) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${idx + 1}</td>
                     <td>${order.nama_produk}</td>
                     <td>${order.jumlah}</td>
                     <td>Rp ${parseFloat(order.total_harga).toLocaleString('id-ID')}</td>
@@ -116,10 +116,10 @@
                     <td class="aksi" data-order-id="${order.id_order}">
                         <a href="detail-pesanan.html?id=${order.id_order}" class="btn-detail" title="Lihat Detail"><i class="fa fa-eye"></i></a>
                         <a href="#" class="btn-hapus" title="Hapus Pesanan"><i class="fa fa-trash"></i></a>
-                    </td>
-                `;
-                tableBody.appendChild(row);
-            });
+                </td>
+            `;
+            tableBody.appendChild(row);
+        });
 
             // Tambahkan event listener untuk semua tombol hapus
             document.querySelectorAll('.btn-hapus').forEach(button => {

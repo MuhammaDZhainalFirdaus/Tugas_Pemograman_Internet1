@@ -23,6 +23,12 @@ if (!is_dir($target_dir)) mkdir($target_dir, 0777, true);
 $ext = pathinfo($_FILES['bukti']['name'], PATHINFO_EXTENSION);
 $filename = 'bukti_' . time() . '_' . rand(1000,9999) . '.' . $ext;
 $target_file = $target_dir . $filename;
+
+// Validasi upload file
+if (!is_uploaded_file($_FILES['bukti']['tmp_name'])) {
+    echo json_encode(['status' => 'error', 'message' => 'File tidak valid untuk diupload']);
+    exit;
+}
 if (!move_uploaded_file($_FILES['bukti']['tmp_name'], $target_file)) {
     echo json_encode(['status' => 'error', 'message' => 'Gagal upload bukti pembayaran']);
     exit;
@@ -30,6 +36,10 @@ if (!move_uploaded_file($_FILES['bukti']['tmp_name'], $target_file)) {
 
 // Simpan ke database (tabel orders, update kolom pembayaran)
 $stmt = $koneksi->prepare("UPDATE orders SET bank_name=?, jumlah_transfer=?, nama_pengirim=?, bukti_pembayaran=?, status='proses' WHERE id_order=?");
+if (!$stmt) {
+    echo json_encode(['status' => 'error', 'message' => 'Query error: ' . $koneksi->error]);
+    exit;
+}
 $stmt->bind_param('sdssi', $bank_name, $amount, $sender_name, $filename, $order_id);
 if ($stmt->execute()) {
     echo json_encode(['status' => 'success', 'message' => 'Pembayaran berhasil dikirim']);
