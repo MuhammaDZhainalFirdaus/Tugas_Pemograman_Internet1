@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informasi Kontak - Toko Alat Kopi</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: #e6ecf5; }
+        .main { margin-left: 220px; min-height: 100vh; background: #e6ecf5; }
+        .topbar { background: #435585; color: #fff; padding: 18px 32px; display: flex; align-items: center; justify-content: space-between; }
+        .kontak-content { padding: 32px; }
+        .kontak-title { font-size: 1.5rem; font-weight: 600; color: #263159; margin-bottom: 24px; }
+        .kontak-info { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(38,49,89,0.07); padding: 28px; max-width: 480px; }
+        .kontak-info .row { margin-bottom: 18px; display: flex; align-items: center; }
+        .kontak-info .icon { width: 32px; text-align: center; color: #435585; font-size: 1.3rem; margin-right: 16px; }
+        .kontak-info .label { font-weight: 600; color: #263159; min-width: 90px; }
+        .kontak-info .value { color: #333; }
+        @media (max-width: 900px) { .main { margin-left: 0; } .kontak-content { padding: 18px; } }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo"><i class="fa fa-coffee"></i> Toko Kopi</div>
+        <nav>
+            <a href="dashboard.html"><i class="fa fa-tachometer-alt"></i> Dashboard</a>
+            <a href="kategori.html"><i class="fa fa-list-ul"></i> Kategori Produk</a>
+            <a href="produk.html"><i class="fa fa-shopping-bag"></i> Produk</a>
+            <a href="pesanan.html"><i class="fa fa-receipt"></i> Pesanan</a>
+            <a href="#kupon"><i class="fa fa-ticket-alt"></i> Kupon</a>
+            <a href="pembayaran.html"><i class="fa fa-money-check-alt"></i> Pembayaran</a>
+            <a href="pelanggan.html"><i class="fa fa-users"></i> Pelanggan</a>
+            <a href="review.html"><i class="fa fa-edit"></i> Review Pelanggan</a>
+            <a href="kontak.html" class="active"><i class="fa fa-phone"></i> Kontak</a>
+        </nav>
+        <div class="bottom">
+            <a href="login.html"><i class="fa fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </div>
+    <div class="main">
+        <div class="topbar">
+            <div style="font-size:1.2rem;font-weight:500;">Informasi Kontak</div>
+            <div class="user">
+                <i class="fa fa-user-circle"></i>
+                <span class="name">Admin</span>
+            </div>
+        </div>
+        <div class="kontak-content">
+            <div class="kontak-title">Hubungi Kami</div>
+            <div class="kontak-info" id="kontakInfo">
+                <div class="row"><span class="icon"><i class="fa fa-map-marker-alt"></i></span><span class="label">Alamat</span><span class="value" id="alamatValue"></span></div>
+                <div class="row"><span class="icon"><i class="fa fa-phone"></i></span><span class="label">Telepon</span><span class="value" id="teleponValue"></span></div>
+                <div class="row"><span class="icon"><i class="fa fa-envelope"></i></span><span class="label">Email</span><span class="value" id="emailValue"></span></div>
+                <div class="row"><span class="icon"><i class="fa fa-globe"></i></span><span class="label">Website</span><span class="value" id="websiteValue"></span></div>
+                <button id="editKontakBtn" style="margin-top:18px;background:#f1c40f;color:#263159;border:none;padding:8px 18px;border-radius:6px;cursor:pointer;font-weight:600;">Edit</button>
+            </div>
+        </div>
+    </div>
+    <!-- Modal Edit Kontak -->
+    <div id="modalEditKontak" style="display:none;position:fixed;left:0;top:0;width:100vw;height:100vh;background:rgba(0,0,0,0.25);z-index:1000;align-items:center;justify-content:center;">
+      <form id="formEditKontak" style="background:#fff;padding:24px 32px;border-radius:10px;min-width:320px;max-width:90vw;">
+        <h3>Edit Informasi Kontak</h3>
+        <div style="margin-bottom:12px;">
+          <label>Alamat</label>
+          <input type="text" name="alamat" id="alamatInput" required style="width:100%;padding:8px;">
+        </div>
+        <div style="margin-bottom:12px;">
+          <label>Telepon</label>
+          <input type="text" name="telepon" id="teleponInput" required style="width:100%;padding:8px;">
+        </div>
+        <div style="margin-bottom:12px;">
+          <label>Email</label>
+          <input type="email" name="email" id="emailInput" required style="width:100%;padding:8px;">
+        </div>
+        <div style="margin-bottom:12px;">
+          <label>Website</label>
+          <input type="text" name="website" id="websiteInput" required style="width:100%;padding:8px;">
+        </div>
+        <div style="text-align:right;">
+          <button type="button" id="batalEditKontak" style="margin-right:8px;">Batal</button>
+          <button type="submit">Simpan</button>
+        </div>
+      </form>
+    </div>
+    <script>
+    async function loadKontak() {
+        const res = await fetch('kontak_api.php');
+        const data = await res.json();
+        document.getElementById('alamatValue').textContent = data.alamat;
+        document.getElementById('teleponValue').textContent = data.telepon;
+        document.getElementById('emailValue').textContent = data.email;
+        document.getElementById('websiteValue').textContent = data.website;
+    }
+    document.addEventListener('DOMContentLoaded', loadKontak);
+
+    document.getElementById('editKontakBtn').onclick = async function() {
+        const res = await fetch('kontak_api.php');
+        const data = await res.json();
+        document.getElementById('alamatInput').value = data.alamat;
+        document.getElementById('teleponInput').value = data.telepon;
+        document.getElementById('emailInput').value = data.email;
+        document.getElementById('websiteInput').value = data.website;
+        document.getElementById('modalEditKontak').style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+    };
+    document.getElementById('batalEditKontak').onclick = function() {
+        document.getElementById('modalEditKontak').style.display = 'none';
+        document.body.style.overflow = '';
+    };
+    document.getElementById('formEditKontak').onsubmit = async function(e) {
+        e.preventDefault();
+        const data = {
+            alamat: document.getElementById('alamatInput').value,
+            telepon: document.getElementById('teleponInput').value,
+            email: document.getElementById('emailInput').value,
+            website: document.getElementById('websiteInput').value
+        };
+        const res = await fetch('kontak_api.php', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        });
+        const result = await res.json();
+        alert(result.message);
+        if(result.status === 'success') {
+            document.getElementById('modalEditKontak').style.display = 'none';
+            document.body.style.overflow = '';
+            loadKontak();
+        }
+    };
+    </script>
+</body>
+</html> 
